@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deneysel Olasılık Oyunları</title>
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --secondary: #a29bfe;
+            --bg: #f0f2f5;
+            --text: #2d3436;
+            --danger: #ff7675;
+            --warning: #fdcb6e;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        #app {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 600px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .hidden { display: none !important; }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 5px;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        button:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .back-btn { background: var(--danger); }
+        .reset-btn { background: var(--warning); color: #2d3436; }
+
+        /* Zar Animasyonu */
+        #dice {
+            font-size: 80px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .roll-animation {
+            animation: spin 0.5s infinite linear;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Penaltı Sahası */
+        .pitch {
+            width: 100%;
+            height: 150px;
+            background: #55efc4;
+            position: relative;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 3px solid white;
+            overflow: hidden;
+        }
+
+        .goal {
+            width: 100px;
+            height: 40px;
+            border: 3px solid white;
+            margin: 0 auto;
+            border-top: none;
+        }
+
+        .ball {
+            width: 30px;
+            height: 30px;
+            background: white;
+            border: 2px solid #333;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* İstatistik Barları */
+        .stat-bar-container {
+            background: #eee;
+            height: 20px;
+            border-radius: 10px;
+            margin: 5px 0;
+            overflow: hidden;
+        }
+
+        .stat-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .student-box {
+            font-size: 50px;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div id="main-menu">
+        <h1>Olasılık Laboratuvarı</h1>
+        <p>Deney yapmak istediğin oyunu seç!</p>
+        <button onclick="showGame('dice-game')">1. Zar Atmaca</button>
+        <button onclick="showGame('penalty-game')">2. Penaltı Çekmece</button>
+        <button onclick="showGame('student-game')">3. Öğrenci Sevdişleri</button>
+    </div>
+
+    <div id="dice-game" class="hidden">
+        <h2>Zar Deneyi</h2>
+        <div id="dice">🎲</div>
+        <button onclick="rollDice()">Zarı At!</button>
+        <button class="reset-btn" onclick="resetDice()">Verileri Temizle</button>
+        <div id="dice-stats"></div>
+        <button class="back-btn" onclick="showMenu()">Ana Menüye Dön</button>
+    </div>
+
+    <div id="penalty-game" class="hidden">
+        <h2>Penaltı Atışı</h2>
+        <div class="pitch">
+            <div class="goal"></div>
+            <div id="ball" class="ball"></div>
+        </div>
+        <button onclick="shoot()">Vur!</button>
+        <button class="reset-btn" onclick="resetPenalty()">Verileri Temizle</button>
+        <div id="penalty-stats">
+            <p>Gol: 0 | Kaçan: 0</p>
+            <p>Deneysel Gol Olasılığı: %0</p>
+        </div>
+        <button class="back-btn" onclick="showMenu()">Ana Menüye Dön</button>
+    </div>
+
+    <div id="student-game" class="hidden">
+        <h2>Renk Anketi</h2>
+        <div class="student-box" id="student-emoji">👨‍🎓</div>
+        <p id="student-choice">Öğrenci ne seçecek?</p>
+        <button onclick="askStudent()">Soru Sor</button>
+        <button class="reset-btn" onclick="resetStudents()">Verileri Temizle</button>
+        <div id="color-stats" style="text-align: left;"></div>
+        <button class="back-btn" onclick="showMenu()">Ana Menüye Dön</button>
+    </div>
+</div>
+
+<script>
+    // --- GENEL SİSTEM ---
+    function showGame(gameId) {
+        document.getElementById('main-menu').classList.add('hidden');
+        document.getElementById(gameId).classList.remove('hidden');
+    }
+
+    function showMenu() {
+        document.querySelectorAll('#app > div').forEach(div => div.classList.add('hidden'));
+        document.getElementById('main-menu').classList.remove('hidden');
+    }
+
+    // --- 1. ZAR OYUNU SIFIRLAMA ---
+    let diceCounts = [0,0,0,0,0,0];
+    let totalRolls = 0;
+    const diceFaces = ['⚀','⚁','⚂','⚃','⚄','⚅'];
+
+    function rollDice() {
+        const diceEl = document.getElementById('dice');
+        diceEl.classList.add('roll-animation');
+        setTimeout(() => {
+            diceEl.classList.remove('roll-animation');
+            const result = Math.floor(Math.random() * 6) + 1;
+            diceEl.innerText = diceFaces[result-1];
+            diceCounts[result-1]++;
+            totalRolls++;
+            updateDiceStats();
+        }, 500);
+    }
+
+    function resetDice() {
+        diceCounts = [0,0,0,0,0,0];
+        totalRolls = 0;
+        document.getElementById('dice').innerText = '🎲';
+        updateDiceStats();
+    }
+
+    function updateDiceStats() {
+        let html = `<h4>Toplam Atış: ${totalRolls}</h4>`;
+        diceCounts.forEach((count, i) => {
+            let prob = totalRolls > 0 ? ((count/totalRolls)*100).toFixed(1) : 0;
+            html += `
+                <div style="font-size: 12px; display: flex; align-items: center;">
+                    <span style="width: 20px;">${i+1}:</span>
+                    <div class="stat-bar-container" style="flex-grow: 1; margin: 5px 10px;">
+                        <div class="stat-bar" style="width: ${prob}%"></div>
+                    </div>
+                    <span>%${prob}</span>
+                </div>`;
+        });
+        document.getElementById('dice-stats').innerHTML = html;
+    }
+
+    // --- 2. PENALTI OYUNU SIFIRLAMA ---
+    let goals = 0;
+    let misses = 0;
+
+    function shoot() {
+        const ball = document.getElementById('ball');
+        const isGoal = Math.random() > 0.4;
+        const targetX = Math.random() * 100 - 50; 
+        const targetY = isGoal ? -110 : -140;
+
+        ball.style.transform = `translateX(calc(-50% + ${targetX}px)) translateY(${targetY}px) scale(0.6)`;
+        
+        setTimeout(() => {
+            if(isGoal) goals++; else misses++;
+            updatePenaltyStats();
+            setTimeout(() => {
+                ball.style.transform = `translateX(-50%) translateY(0) scale(1)`;
+            }, 1000);
+        }, 600);
+    }
+
+    function resetPenalty() {
+        goals = 0;
+        misses = 0;
+        updatePenaltyStats();
+    }
+
+    function updatePenaltyStats() {
+        const total = goals + misses;
+        const prob = total > 0 ? ((goals/total)*100).toFixed(1) : 0;
+        document.getElementById('penalty-stats').innerHTML = `
+            <p>⚽ Gol: ${goals} | ❌ Kaçan: ${misses}</p>
+            <p><b>Deneysel Gol Olasılığı: %${prob}</b></p>
+        `;
+    }
+
+    // --- 3. ÖĞRENCİ OYUNU SIFIRLAMA ---
+    const colors = [
+        {name: 'Yeşil', code: '#2ecc71', emoji: '🟢'},
+        {name: 'Kırmızı', code: '#e74c3c', emoji: '🔴'},
+        {name: 'Mavi', code: '#3498db', emoji: '🔵'},
+        {name: 'Sarı', code: '#f1c40f', emoji: '🟡'}
+    ];
+    let colorCounts = { 'Yeşil': 0, 'Kırmızı': 0, 'Mavi': 0, 'Sarı': 0 };
+    let totalStudents = 0;
+
+    function askStudent() {
+        const choice = colors[Math.floor(Math.random() * colors.length)];
+        const students = ['👨‍🎓', '👩‍🎓', '🧒', '👧'];
+        document.getElementById('student-emoji').innerText = students[Math.floor(Math.random() * students.length)];
+        document.getElementById('student-choice').innerText = `Ben ${choice.name} rengini seviyorum! ${choice.emoji}`;
+        document.getElementById('student-choice').style.color = choice.code;
+        colorCounts[choice.name]++;
+        totalStudents++;
+        updateStudentStats();
+    }
+
+    function resetStudents() {
+        colorCounts = { 'Yeşil': 0, 'Kırmızı': 0, 'Mavi': 0, 'Sarı': 0 };
+        totalStudents = 0;
+        document.getElementById('student-choice').innerText = "Öğrenci ne seçecek?";
+        document.getElementById('student-choice').style.color = 'inherit';
+        updateStudentStats();
+    }
+
+    function updateStudentStats() {
+        let html = `<h4>Anket Sonuçları (Toplam: ${totalStudents})</h4>`;
+        for (let color in colorCounts) {
+            let prob = totalStudents > 0 ? ((colorCounts[color]/totalStudents)*100).toFixed(1) : 0;
+            html += `
+                <div style="font-size: 13px; margin-bottom: 5px;">
+                    ${color}: %${prob} (${colorCounts[color]} kişi)
+                </div>`;
+        }
+        document.getElementById('color-stats').innerHTML = html;
+    }
+</script>
+
+</body>
+</html>
