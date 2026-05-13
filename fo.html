@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circuit Master: Ultra Edition</title>
+    <style>
+        :root {
+            --neon-blue: #00d2ff;
+            --neon-purple: #9d50bb;
+            --neon-red: #ff4b2b;
+            --neon-yellow: #f9d423;
+            --bg-dark: #050a14;
+            --panel-bg: rgba(20, 30, 48, 0.8);
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg-dark);
+            color: white;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* --- HEADER --- */
+        #main-header {
+            width: 100%;
+            padding: 30px;
+            text-align: center;
+            background: linear-gradient(180deg, #101827, transparent);
+            border-bottom: 2px solid var(--neon-blue);
+            box-shadow: 0 5px 20px rgba(0, 210, 255, 0.2);
+        }
+
+        #main-header h1 {
+            margin: 0;
+            font-size: 2.8rem;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            background: linear-gradient(to right, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px var(--neon-blue));
+        }
+
+        /* --- GAME ENGINE --- */
+        #game-container {
+            position: relative;
+            width: 950px;
+            margin-top: 40px;
+            background: var(--panel-bg);
+            border-radius: 30px;
+            padding: 40px;
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        /* Kablo Akış Animasyonu */
+        .wire-container {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px; height: 300px;
+            border: 6px solid #1e293b;
+            border-radius: 50px;
+            z-index: 0;
+        }
+
+        .electron-flow {
+            position: absolute;
+            width: 100%; height: 100%;
+            border-radius: 44px;
+            border: 6px solid transparent;
+            border-top: 6px solid var(--neon-blue);
+            animation: flow 2s linear infinite;
+            filter: blur(2px);
+        }
+
+        @keyframes flow {
+            0% { transform: rotate(0deg); border-color: var(--neon-blue); }
+            50% { border-color: var(--neon-purple); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Dijital Göstergeler */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-radius: 15px;
+            border-left: 4px solid var(--neon-blue);
+            text-align: center;
+        }
+
+        .stat-card h4 { margin: 0; font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; }
+        .stat-card p { margin: 5px 0 0; font-size: 1.5rem; font-family: 'Courier New'; color: var(--neon-yellow); }
+
+        /* Bileşenler */
+        .workspace {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 200px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .component-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            max-width: 250px;
+        }
+
+        .battery { width: 30px; height: 50px; background: var(--neon-red); border-radius: 5px; border: 2px solid #fff; position: relative; }
+        .battery::after { content: '+'; position: absolute; top: -15px; left: 8px; color: white; }
+
+        .bulb { width: 50px; height: 50px; background: #334155; border-radius: 50%; transition: 0.3s; }
+        
+        .resistor { width: 60px; height: 20px; background: #8b4513; border-radius: 10px; border: 2px solid #5d2e0a; }
+
+        .fan { 
+            width: 60px; height: 60px; 
+            background: #475569; 
+            border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem;
+        }
+        .spinning { animation: spin 0.5s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        /* --- KONTROL PANELİ --- */
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .ctrl-group {
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 15px;
+            border: 1px solid #334155;
+            text-align: center;
+        }
+
+        .btn {
+            background: #0f172a;
+            color: white;
+            border: 1px solid var(--neon-blue);
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .btn:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 15px var(--neon-blue); }
+
+        .warning { color: var(--neon-red); font-weight: bold; animation: blink 1s infinite; display: none;}
+        @keyframes blink { 50% { opacity: 0; } }
+
+    </style>
+</head>
+<body>
+
+<header id="main-header">
+    <h1>KEREM UYAR | CIRCUIT MASTER</h1>
+    <p>ENGINEERING SIMULATION v3.0</p>
+</header>
+
+<div id="game-container">
+    <div class="dashboard">
+        <div class="stat-card">
+            <h4>VOLTAJ (V)</h4>
+            <p id="v-val">0.0</p>
+        </div>
+        <div class="stat-card" id="i-card">
+            <h4>AKIM (AMPER)</h4>
+            <p id="i-val">0.00</p>
+        </div>
+        <div class="stat-card">
+            <h4>DİRENÇ (OHM)</h4>
+            <p id="r-val">0</p>
+        </div>
+    </div>
+
+    <div id="overload-msg" class="warning">⚠️ AŞIRI YÜKLENME! SİSTEM ERİYOR!</div>
+
+    <div class="wire-container">
+        <div class="electron-flow" id="flow-anim"></div>
+    </div>
+
+    <div class="workspace">
+        <div id="bat-area" class="component-grid"></div>
+        <div id="res-area" class="component-grid"></div>
+        <div id="out-area" class="component-grid"></div>
+    </div>
+</div>
+
+<div class="controls">
+    <div class="ctrl-group">
+        <div>🔋 PİL EKLE</div>
+        <button class="btn" onclick="adjust('bat', -1)">-</button>
+        <button class="btn" onclick="adjust('bat', 1)">+</button>
+    </div>
+    <div class="ctrl-group">
+        <div>🚧 DİRENÇ EKLE</div>
+        <button class="btn" onclick="adjust('res', -1)">-</button>
+        <button class="btn" onclick="adjust('res', 1)">+</button>
+    </div>
+    <div class="ctrl-group">
+        <div>💡 AMPUL</div>
+        <button class="btn" onclick="adjust('bulb', -1)">-</button>
+        <button class="btn" onclick="adjust('bulb', 1)">+</button>
+    </div>
+    <div class="ctrl-group">
+        <div>🌀 PERVANE</div>
+        <button class="btn" onclick="adjust('fan', -1)">-</button>
+        <button class="btn" onclick="adjust('fan', 1)">+</button>
+    </div>
+</div>
+
+<footer style="margin-top: 40px; color: #475569; font-size: 0.8rem;">
+    Guest Developer: Kola Lordu | Build: 2026.05.13
+</footer>
+
+<script>
+    let state = {
+        bat: 1,
+        res: 0,
+        bulb: 1,
+        fan: 0
+    };
+
+    function updatePhysics() {
+        const V = state.bat * 1.5;
+        const R = (state.bulb * 10) + (state.res * 20) + (state.fan * 15);
+        const I = R > 0 ? V / R : 0;
+
+        // UI Güncelleme
+        document.getElementById('v-val').innerText = V.toFixed(1);
+        document.getElementById('r-val').innerText = R;
+        document.getElementById('i-val').innerText = I.toFixed(2);
+
+        // Akış Hızı Animasyonu
+        const flow = document.getElementById('flow-anim');
+        if(I > 0) {
+            const speed = Math.max(0.1, 2 - (I * 5)); 
+            flow.style.animationDuration = `${speed}s`;
+            flow.style.opacity = "1";
+        } else {
+            flow.style.opacity = "0";
+        }
+
+        // Aşırı Yüklenme Kontrolü
+        const msg = document.getElementById('overload-msg');
+        if(I > 0.4) {
+            msg.style.display = "block";
+            document.getElementById('i-card').style.borderColor = "var(--neon-red)";
+        } else {
+            msg.style.display = "none";
+            document.getElementById('i-card').style.borderColor = "var(--neon-blue)";
+        }
+
+        renderComponents(I);
+    }
+
+    function renderComponents(current) {
+        // Pilleri Çiz
+        const batArea = document.getElementById('bat-area');
+        batArea.innerHTML = '';
+        for(let i=0; i<state.bat; i++) batArea.innerHTML += '<div class="battery"></div>';
+
+        // Dirençleri Çiz
+        const resArea = document.getElementById('res-area');
+        resArea.innerHTML = '';
+        for(let i=0; i<state.res; i++) resArea.innerHTML += '<div class="resistor"></div>';
+
+        // Çıkış Elemanları (Ampul & Fan)
+        const outArea = document.getElementById('out-area');
+        outArea.innerHTML = '';
+        
+        // Ampuller
+        for(let i=0; i<state.bulb; i++) {
+            const b = document.createElement('div');
+            b.className = 'bulb';
+            if(current > 0.01) {
+                const bright = Math.min(current * 200, 100);
+                b.style.background = `radial-gradient(circle, #fff 0%, var(--neon-yellow) ${100-bright}%, #334155 100%)`;
+                b.style.boxShadow = `0 0 ${bright/2}px ${bright/5}px rgba(249, 212, 35, ${current * 2})`;
+            }
+            outArea.appendChild(b);
+        }
+
+        // Fanlar
+        for(let i=0; i<state.fan; i++) {
+            const f = document.createElement('div');
+            f.className = 'fan';
+            f.innerHTML = '⚙️';
+            if(current > 0.05) {
+                f.classList.add('spinning');
+                f.style.animationDuration = `${Math.max(0.1, 1 - (current * 3))}s`;
+            }
+            outArea.appendChild(f);
+        }
+    }
+
+    function adjust(type, val) {
+        state[type] = Math.max(0, Math.min(state[type] + val, 10));
+        // En az 1 pil ve 1 dirençli eleman olsun ki devre tamamlanabilsin (opsiyonel)
+        if(state.bat === 0 && type === 'bat') state.bat = 0; 
+        updatePhysics();
+    }
+
+    // Başlangıç
+    updatePhysics();
+</script>
+
+</body>
+</html>
