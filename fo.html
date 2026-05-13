@@ -60,26 +60,6 @@
             box-shadow: 0 0 50px rgba(0,0,0,0.5);
         }
 
-        /* Kablo Akış Animasyonu Fix */
-        .wire-container {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 800px; height: 300px;
-            border: 6px solid #1e293b;
-            border-radius: 50px;
-            z-index: 0;
-        }
-
-        .electron-flow {
-            position: absolute;
-            width: 100%; height: 100%;
-            border-radius: 44px;
-            border: 6px solid transparent;
-            border-top: 6px solid var(--neon-blue);
-            animation: flow 2s linear infinite;
-            filter: blur(2px);
-        }
 
         @keyframes flow {
             0% { transform: rotate(0deg); }
@@ -369,7 +349,7 @@
     }
 
     function adjust(type, val) {
-        state[type] = Math.max(0, Math.min(state[type] + val, 10));
+        state[type] = Math.max(0, Math.min(state[type] + val, 100));
         updatePhysics();
     }
 
