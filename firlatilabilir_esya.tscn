@@ -1,0 +1,22 @@
+[gd_scene format=3 uid="uid://r6amkhv4rnvq"]
+
+[ext_resource type="Script" uid="uid://44m4xdkbx1f0" path="res://firlatilabilir_esya.gd" id="1_wo10y"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_hjbyv"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_uc802"]
+
+[node name="FirlatilabilirEsya" type="RigidBody3D" unique_id=324411432]
+collision_layer = 4
+collision_mask = 14
+script = ExtResource("1_wo10y")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=727588279]
+transform = Transform3D(0.46597356, 0, 0, 0, 0.26929355, 0, 0, 0, 0.17851783, -0.025040865, 0, 0)
+mesh = SubResource("BoxMesh_hjbyv")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1668388262]
+transform = Transform3D(0.46597356, 0, 0, 0, 0.26929355, 0, 0, 0, 0.17851783, -0.025040865, 0, 0)
+shape = SubResource("BoxShape3D_uc802")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=124991217]

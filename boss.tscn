@@ -1,0 +1,55 @@
+[gd_scene format=3 uid="uid://la1cei10dam7"]
+
+[ext_resource type="Script" uid="uid://cuqxu1il1jbxp" path="res://boss.gd" id="1_6xxrv"]
+[ext_resource type="PackedScene" uid="uid://bcyxk15vm0dcg" path="res://addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Warrior.glb" id="2_skx2t"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_lnbgr"]
+size = Vector3(3.9863281, 4.645447, 3.9540405)
+
+[node name="Boss" type="CharacterBody3D" unique_id=649099340 groups=["boss"]]
+transform = Transform3D(-4.371139e-08, 0, 1, 0, 1, 0, -1, 0, -4.371139e-08, 0, 0, 0)
+collision_layer = 2
+collision_mask = 7
+script = ExtResource("1_6xxrv")
+
+[node name="Skeleton_Warrior" parent="." unique_id=1059415853 instance=ExtResource("2_skx2t")]
+transform = Transform3D(3, 0, 0, 0, 3, 0, 0, 0, 3, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=186224780]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28859663, 5.464752, 0.25268435)
+shape = SubResource("BoxShape3D_lnbgr")
+
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="." unique_id=551212209]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28859663, 1.6259766, -0.50875974)
+shape = SubResource("BoxShape3D_lnbgr")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="." unique_id=94825986]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9238999, 0)
+omni_range = 10.001198
+
+[node name="OmniLight3D2" type="OmniLight3D" parent="." unique_id=559097214]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.375169, 0)
+omni_range = 10.001198
+
+[node name="OmniLight3D3" type="OmniLight3D" parent="." unique_id=972634290]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.02826, 3.4017346)
+omni_range = 10.001198
+
+[node name="OmniLight3D4" type="OmniLight3D" parent="." unique_id=1080641636]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.02826, -3.7745578)
+omni_range = 10.001198
+
+[node name="OmniLight3D6" type="OmniLight3D" parent="." unique_id=2124954470]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.162468, 3.02826, 0.0628016)
+omni_range = 10.001198
+
+[node name="OmniLight3D7" type="OmniLight3D" parent="." unique_id=981166619]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.315036, 3.02826, 0.0628016)
+omni_range = 10.001198
+
+[node name="Area3D" type="Area3D" parent="." unique_id=1725385965]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.68568e-09, 0, 0.15295053)
+
+[node name="CollisionShape3D3" type="CollisionShape3D" parent="Area3D" unique_id=1039664764]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.28859663, 1.6259766, -0.50875974)
+shape = SubResource("BoxShape3D_lnbgr")

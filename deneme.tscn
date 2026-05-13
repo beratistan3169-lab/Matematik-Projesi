@@ -1,0 +1,34 @@
+[gd_scene format=3 uid="uid://dchpfco7f3nfw"]
+
+[ext_resource type="PackedScene" uid="uid://dugxqowuwf58q" path="res://addons/kaykit_character_pack_adventures/Assets/gltf/arrow.gltf" id="1_ua3w8"]
+[ext_resource type="PackedScene" uid="uid://bofcndxg8dl70" path="res://addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Mage.glb" id="2_bnfl7"]
+[ext_resource type="PackedScene" uid="uid://dln4y673wunu3" path="res://addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Minion.glb" id="3_j5rsp"]
+[ext_resource type="PackedScene" uid="uid://b4d6yon2t5f7q" path="res://addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Rogue.glb" id="4_tlklb"]
+[ext_resource type="PackedScene" uid="uid://bcyxk15vm0dcg" path="res://addons/kaykit_character_pack_skeletons/Characters/gltf/Skeleton_Warrior.glb" id="5_h6a0u"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1yjh8"]
+albedo_color = Color(1, 0, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_0noen"]
+material = SubResource("StandardMaterial3D_1yjh8")
+size = Vector3(100, 0, 100)
+
+[node name="Node3D" type="Node3D" unique_id=1422876252]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1537209723]
+mesh = SubResource("BoxMesh_0noen")
+
+[node name="arrow2" parent="." unique_id=1004493497 instance=ExtResource("1_ua3w8")]
+transform = Transform3D(0.14042754, -2.9154217, 0, 1.875507, 0.2182906, 0, 0, 0, 1.7039936, 1.4149075, 0.77345157, 0)
+
+[node name="Skeleton_Mage" parent="." unique_id=1916598529 instance=ExtResource("2_bnfl7")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.84957874)
+
+[node name="Skeleton_Minion" parent="." unique_id=649497152 instance=ExtResource("3_j5rsp")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.0248737, 0, 0.1528678)
+
+[node name="Skeleton_Rogue" parent="." unique_id=568056697 instance=ExtResource("4_tlklb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.112738, 0, 0.26266694)
+
+[node name="Skeleton_Warrior" parent="." unique_id=1059415853 instance=ExtResource("5_h6a0u")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.86135, 0, 0.62156844)
