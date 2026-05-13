@@ -1,0 +1,1918 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚽ FIFA Career Mode Simulator - Let's build a legend!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 255, 136, 0.3);
+        }
+        
+        header h1 {
+            color: #0a0e27;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .motto {
+            color: #0a0e27;
+            font-style: italic;
+            margin-top: 10px;
+            font-size: 1.2em;
+        }
+        
+        .setup-screen, .game-screen {
+            display: none;
+        }
+        
+        .setup-screen.active, .game-screen.active {
+            display: block;
+        }
+        
+        .setup-form {
+            background: rgba(26, 31, 58, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+            border: 2px solid #00ff88;
+            box-shadow: 0 8px 32px rgba(0, 255, 136, 0.2);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            color: #00ff88;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #00ff88;
+            background: #0a0e27;
+            color: #e0e0e0;
+            font-size: 1em;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: #0a0e27;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 255, 136, 0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff4444 0%, #cc0000 100%);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffa500 0%, #ff8800 100%);
+            color: #0a0e27;
+        }
+
+        .btn-action {
+            background: rgba(0, 255, 136, 0.2);
+            border: 2px solid #00ff88;
+            color: #00ff88;
+            width: 100%;
+            margin: 8px 0;
+            text-align: left;
+            padding: 15px 20px;
+        }
+
+        .btn-action:hover {
+            background: rgba(0, 255, 136, 0.3);
+            transform: translateX(5px);
+        }
+
+        .btn-action:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .main-dashboard {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .player-card {
+            background: linear-gradient(135deg, #1a1f3a 0%, #2a2f4a 100%);
+            border: 3px solid #00ff88;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 255, 136, 0.3);
+            position: relative;
+            overflow: hidden;
+            height: fit-content;
+        }
+        
+        .rating-badge {
+            display: inline-block;
+            background: #00ff88;
+            color: #0a0e27;
+            font-size: 3em;
+            font-weight: bold;
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .potential-badge {
+            display: inline-block;
+            background: rgba(255, 215, 0, 0.3);
+            color: #ffd700;
+            font-size: 1em;
+            padding: 5px 15px;
+            border-radius: 8px;
+            margin-left: 10px;
+            border: 2px solid #ffd700;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .status-starter {
+            background: #00ff88;
+            color: #0a0e27;
+        }
+
+        .status-bench {
+            background: #ffa500;
+            color: #0a0e27;
+        }
+
+        .status-reserve {
+            background: #ff4444;
+            color: white;
+        }
+        
+        .stat-bars {
+            margin-top: 20px;
+        }
+
+        .stat-bar {
+            margin: 12px 0;
+        }
+        
+        .stat-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.85em;
+        }
+        
+        .bar-container {
+            background: #0a0e27;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #00ff88;
+        }
+        
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88 0%, #00cc6a 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            font-size: 0.75em;
+            font-weight: bold;
+            color: #0a0e27;
+        }
+
+        .morale-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 10px;
+            border: 2px solid #00ff88;
+        }
+
+        .morale-bar {
+            background: #0a0e27;
+            height: 25px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid #00ff88;
+            margin-top: 10px;
+        }
+
+        .morale-fill {
+            height: 100%;
+            transition: width 0.5s ease, background 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .wallet-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 215, 0, 0.1);
+            border-radius: 10px;
+            border: 2px solid #ffd700;
+            text-align: center;
+        }
+
+        .wallet-amount {
+            font-size: 2em;
+            color: #ffd700;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        .content-area {
+            background: rgba(26, 31, 58, 0.9);
+            border: 2px solid #00ff88;
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid rgba(0, 255, 136, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .tab {
+            padding: 12px 25px;
+            background: rgba(0, 255, 136, 0.1);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #aaa;
+        }
+
+        .tab.active {
+            background: rgba(0, 255, 136, 0.2);
+            border-color: #00ff88;
+            color: #00ff88;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .match-week {
+            background: #0a0e27;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 2px solid #00ff88;
+        }
+
+        .match-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: rgba(0, 255, 136, 0.05);
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .match-teams {
+            flex: 1;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .team-name {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .team-home {
+            color: #00ff88;
+        }
+
+        .team-away {
+            color: #aaa;
+        }
+
+        .match-score {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ffd700;
+            margin: 0 20px;
+        }
+
+        .match-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .training-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .training-card {
+            background: #0a0e27;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #00ff88;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .training-card:hover:not(.disabled) {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 255, 136, 0.3);
+        }
+
+        .training-card.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .training-card.selected {
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .training-icon {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .training-title {
+            color: #00ff88;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .training-stats {
+            font-size: 0.85em;
+            color: #aaa;
+            margin-bottom: 8px;
+        }
+
+        .objectives-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .objective-card {
+            background: #0a0e27;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #00ff88;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .objective-card.completed {
+            border-color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .objective-progress {
+            margin-top: 10px;
+        }
+
+        .objective-bar {
+            background: #1a1f3a;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .objective-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88 0%, #00cc6a 100%);
+            transition: width 0.5s ease;
+        }
+
+        .contract-info {
+            background: #0a0e27;
+            padding: 25px;
+            border-radius: 12px;
+            border: 2px solid #00ff88;
+            margin-bottom: 20px;
+        }
+
+        .contract-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .transfer-offers {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .offer-card {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #0a0e27;
+            padding: 25px;
+            border-radius: 15px;
+            border: 3px solid #ffa500;
+        }
+
+        .offer-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .offer-stat {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .match-simulator {
+            background: #0a0e27;
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #00ff88;
+        }
+
+        .match-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .situation-box {
+            background: rgba(255, 215, 0, 0.1);
+            border: 3px solid #ffd700;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .situation-title {
+            font-size: 1.8em;
+            color: #ffd700;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .situation-desc {
+            font-size: 1.2em;
+            color: #e0e0e0;
+            margin-bottom: 25px;
+        }
+
+        .choices-grid {
+            display: grid;
+            gap: 15px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .match-events {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #1a1f3a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .event-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #00ff88;
+        }
+
+        .event-item.goal {
+            border-left-color: #ffd700;
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .event-item.assist {
+            border-left-color: #00ccff;
+            background: rgba(0, 204, 255, 0.1);
+        }
+
+        .event-item.success {
+            border-left-color: #00ff88;
+            background: rgba(0, 255, 136, 0.2);
+        }
+
+        .event-item.fail {
+            border-left-color: #ff4444;
+            background: rgba(255, 68, 68, 0.1);
+        }
+
+        .notification {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+            color: #0a0e27;
+            padding: 40px 60px;
+            border-radius: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            box-shadow: 0 8px 32px rgba(0, 255, 136, 0.5);
+            z-index: 1000;
+            display: none;
+            text-align: center;
+            max-width: 500px;
+        }
+        
+        .notification.show {
+            display: block;
+            animation: popIn 0.5s ease;
+        }
+        
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: #0a0e27;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #00ff88;
+        }
+
+        .stat-value {
+            font-size: 2.5em;
+            color: #00ff88;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #aaa;
+            margin-top: 8px;
+        }
+
+        .news-feed {
+            background: #0a0e27;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #00ff88;
+            margin-top: 20px;
+        }
+
+        .news-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: rgba(0, 255, 136, 0.05);
+            border-radius: 8px;
+            border-left: 3px solid #00ff88;
+        }
+
+        .news-time {
+            font-size: 0.8em;
+            color: #aaa;
+        }
+
+        @media (max-width: 1024px) {
+            .main-dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>⚽ FIFA Career Mode Simulator</h1>
+            <div class="motto">"Let's build a legend!"</div>
+        </header>
+
+        <div class="setup-screen active">
+            <div class="setup-form">
+                <h2 style="color: #00ff88; margin-bottom: 30px; text-align: center;">🏆 Kariyerini Başlat</h2>
+                <div class="form-group">
+                    <label>👤 Oyuncu Adı:</label>
+                    <input type="text" id="playerName" placeholder="Adınızı girin">
+                </div>
+                <div class="form-group">
+                    <label>🌍 Uyruk:</label>
+                    <select id="nationality">
+                        <option value="Türkiye">🇹🇷 Türkiye</option>
+                        <option value="İngiltere">🏴󠁧󠁢󠁥󠁮󠁧󠁿 İngiltere</option>
+                        <option value="İspanya">🇪🇸 İspanya</option>
+                        <option value="Almanya">🇩🇪 Almanya</option>
+                        <option value="Fransa">🇫🇷 Fransa</option>
+                        <option value="Brezilya">🇧🇷 Brezilya</option>
+                        <option value="Arjantin">🇦🇷 Arjantin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>⚽ Mevki:</label>
+                    <select id="position">
+                        <option value="GK">🧤 GK - Kaleci</option>
+                        <option value="CB">🛡️ CB - Stoper</option>
+                        <option value="LB">◀️ LB - Sol Bek</option>
+                        <option value="RB">▶️ RB - Sağ Bek</option>
+                        <option value="CDM">⚓ CDM - Defansif Orta Saha</option>
+                        <option value="CM">🧠 CM - Orta Saha</option>
+                        <option value="CAM">🎯 CAM - Ofansif Orta Saha</option>
+                        <option value="LW">↖️ LW - Sol Kanat</option>
+                        <option value="RW">↗️ RW - Sağ Kanat</option>
+                        <option value="ST">👟 ST - Forvet</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="startCareer()" style="width: 100%;">🚀 Kariyere Başla!</button>
+            </div>
+        </div>
+
+        <div class="game-screen">
+            <div class="main-dashboard">
+                <div class="player-card">
+                    <div class="rating-badge" id="ratingBadge">60</div>
+                    <span class="potential-badge" id="potentialBadge">POT: 85</span>
+                    <h2 id="playerNameDisplay" style="color: #00ff88; margin: 15px 0 5px 0;">Oyuncu</h2>
+                    <p id="positionDisplay" style="color: #aaa;">Mevki</p>
+                    <p id="nationalityDisplay" style="color: #aaa;">Uyruk</p>
+                    <div class="status-badge status-bench" id="statusBadge">🪑 YEDEK</div>
+
+                    <div class="wallet-container">
+                        <div style="font-size: 0.9em; color: #ffd700;">💰 Haftalık Maaş</div>
+                        <div class="wallet-amount" id="walletAmount">35,000 €</div>
+                    </div>
+
+                    <div class="morale-container">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <strong>😊 Moral:</strong>
+                            <span id="moraleText">İyi</span>
+                        </div>
+                        <div class="morale-bar">
+                            <div class="morale-fill" id="moraleFill" style="width: 70%;">70%</div>
+                        </div>
+                    </div>
+
+                    <div class="stat-bars">
+                        <div class="stat-bar">
+                            <div class="stat-label">
+                                <span>🏃 Hız</span>
+                                <span id="paceValue">60</span>
+                            </div>
+                            <div class="bar-container">
+                                <div class="bar-fill" id="paceBar" style="width: 60%;">60</div>
+                            </div>
+                        </div>
+                        <div class="stat-bar">
+                            <div class="stat-label">
+                                <span>🎯 Şut</span>
+                                <span id="shootingValue">60</span>
+                            </div>
+                            <div class="bar-container">
+                                <div class="bar-fill" id="shootingBar" style="width: 60%;">60</div>
+                            </div>
+                        </div>
+                        <div class="stat-bar">
+                            <div class="stat-label">
+                                <span>🧠 Pas</span>
+                                <span id="passingValue">60</span>
+                            </div>
+                            <div class="bar-container">
+                                <div class="bar-fill" id="passingBar" style="width: 60%;">60</div>
+                            </div>
+                        </div>
+                        <div class="stat-bar">
+                            <div class="stat-label">
+                                <span>🛡️ Savunma</span>
+                                <span id="defenseValue">60</span>
+                            </div>
+                            <div class="bar-container">
+                                <div class="bar-fill" id="defenseBar" style="width: 60%;">60</div>
+                            </div>
+                        </div>
+                        <div class="stat-bar">
+                            <div class="stat-label">
+                                <span>💪 Fizik</span>
+                                <span id="physicalValue">60</span>
+                            </div>
+                            <div class="bar-container">
+                                <div class="bar-fill" id="physicalBar" style="width: 60%;">60</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-area">
+                    <div class="tabs">
+                        <div class="tab active" onclick="switchTab('calendar')">📅 Takvim</div>
+                        <div class="tab" onclick="switchTab('training')">🏋️ Antrenman</div>
+                        <div class="tab" onclick="switchTab('career')">📊 Kariyer</div>
+                        <div class="tab" onclick="switchTab('transfer')">💰 Transfer</div>
+                    </div>
+
+                    <div id="calendar-tab" class="tab-content active">
+                        <div class="calendar-header">
+                            <div>
+                                <h2 style="color: #00ff88;">🏆 Sezon: <span id="season">2024/25</span></h2>
+                                <p>🏟️ Kulüp: <span id="clubName">-</span> | 🎖️ Lig: <span id="leagueName">-</span></p>
+                            </div>
+                            <div style="text-align: right;">
+                                <h3 style="color: #ffd700;">Hafta <span id="weekNumber">1</span>/38</h3>
+                                <p>💼 Maaş: <span id="salary">35,000</span> €/hafta</p>
+                            </div>
+                        </div>
+
+                        <div id="matchSchedule"></div>
+                    </div>
+
+                    <div id="training-tab" class="tab-content">
+                        <h2 style="color: #00ff88; margin-bottom: 20px;">🏋️ Antrenman Programı</h2>
+                        <p style="color: #aaa; margin-bottom: 20px;">Bu haftanın antrenmanını seçin. Her antrenman farklı özelliklerinizi geliştirir.</p>
+                        <div class="training-section" id="trainingOptions"></div>
+                        <button class="btn btn-primary" onclick="confirmTraining()" id="confirmTrainingBtn" style="margin-top: 20px; width: 100%;" disabled>✅ Antrenmanı Onayla</button>
+                    </div>
+
+                    <div id="career-tab" class="tab-content">
+                        <h2 style="color: #00ff88; margin-bottom: 20px;">📊 Kariyer İstatistikleri</h2>
+                        
+                        <div class="contract-info">
+                            <h3 style="color: #00ff88; margin-bottom: 15px;">📝 Sözleşme Bilgileri</h3>
+                            <div class="contract-row">
+                                <span><strong>🏟️ Kulüp:</strong></span>
+                                <span id="contractClub">-</span>
+                            </div>
+                            <div class="contract-row">
+                                <span><strong>💰 Maaş:</strong></span>
+                                <span id="contractSalary">-</span>
+                            </div>
+                            <div class="contract-row">
+                                <span><strong>📅 Sözleşme Süresi:</strong></span>
+                                <span id="contractLength">3 Yıl</span>
+                            </div>
+                            <div class="contract-row">
+                                <span><strong>💎 Piyasa Değeri:</strong></span>
+                                <span id="marketValue">500,000 €</span>
+                            </div>
+                        </div>
+
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="totalMatches">0</div>
+                                <div class="stat-label">🏃 Maçlar</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="totalGoals">0</div>
+                                <div class="stat-label">⚽ Goller</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="totalAssists">0</div>
+                                <div class="stat-label">🎯 Asistler</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="avgRating">0.0</div>
+                                <div class="stat-label">⭐ Ort. Not</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="motmCount">0</div>
+                                <div class="stat-label">🏆 MOTM</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="cleanSheets">0</div>
+                                <div class="stat-label">🧤 Gol Yememe</div>
+                            </div>
+                        </div>
+
+                        <div class="objectives-list" style="margin-top: 30px;">
+                            <h3 style="color: #00ff88; margin-bottom: 15px;">🎯 Sezon Hedefleri</h3>
+                            <div id="objectivesList"></div>
+                        </div>
+                    </div>
+
+                    <div id="transfer-tab" class="tab-content">
+                        <h2 style="color: #00ff88; margin-bottom: 20px;">💰 Transfer Merkezi</h2>
+                        <div id="transferOffers">
+                            <p style="color: #aaa; text-align: center; padding: 40px;">Şu anda transfer teklifiniz bulunmamaktadır.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="news-feed">
+                <h3 style="color: #00ff88; margin-bottom: 15px;">📰 Haberler</h3>
+                <div id="newsFeed"></div>
+            </div>
+        </div>
+
+        <div class="notification" id="notification"></div>
+    </div>
+
+    <script>
+        let selectedTraining = null;
+        let currentTab = 'calendar';
+        let matchSimulating = false;
+        let currentMatch = null;
+
+        const player = {
+            name: '',
+            nationality: '',
+            position: '',
+            rating: 62,
+            potential: 85,
+            age: 17,
+            morale: 70,
+            status: 'bench',
+            club: '',
+            league: '',
+            leagueLevel: 1,
+            salary: 35000,
+            marketValue: 500000,
+            contractYears: 3,
+            season: 2024,
+            week: 1,
+            stats: {
+                pace: 60,
+                shooting: 60,
+                passing: 60,
+                dribbling: 60,
+                defense: 60,
+                physical: 60,
+                positioning: 60,
+                finishing: 60,
+                longShots: 60,
+                volleys: 60,
+                penalties: 60,
+                vision: 60,
+                crossing: 60,
+                freeKick: 60,
+                shortPassing: 60,
+                longPassing: 60,
+                curve: 60,
+                ballControl: 60,
+                acceleration: 60,
+                sprintSpeed: 60,
+                agility: 60,
+                reactions: 60,
+                balance: 60,
+                shotPower: 60,
+                jumping: 60,
+                stamina: 60,
+                strength: 60,
+                aggression: 60,
+                interceptions: 60,
+                headingAccuracy: 60,
+                marking: 60,
+                standingTackle: 60,
+                slidingTackle: 60,
+                gkDiving: 60,
+                gkHandling: 60,
+                gkKicking: 60,
+                gkPositioning: 60,
+                gkReflexes: 60
+            },
+            career: {
+                matches: 0,
+                goals: 0,
+                assists: 0,
+                avgRating: 0,
+                motm: 0,
+                cleanSheets: 0,
+                totalRating: 0,
+                starterMatches: 0,
+                benchMatches: 0
+            },
+            weeklyTraining: null,
+            trainingCompleted: false
+        };
+
+        const clubs = {
+            1: ['Galatasaray', 'Fenerbahçe', 'Beşiktaş', 'Trabzonspor', 'Başakşehir', 'Adana Demirspor'],
+            0: ['Bayern Munich', 'Real Madrid', 'Manchester City', 'PSG', 'Barcelona', 'Liverpool']
+        };
+
+        const leagues = {
+            1: { name: 'Süper Lig', salary: 35000, marketMult: 40 },
+            0: { name: 'Şampiyonlar Ligi Seviyesi', salary: 120000, marketMult: 300 }
+        };
+
+        const trainings = {
+            GK: [
+                { name: '🧤 Refleks ve Dalış', icon: '🧤', stats: { gkReflexes: 3, gkDiving: 2, reactions: 2 }, focus: 'Kalecilik' },
+                { name: '🤾 Pozisyon ve Top Kontrolü', icon: '🤾', stats: { gkPositioning: 3, gkHandling: 2, ballControl: 1 }, focus: 'Kalecilik' },
+                { name: '🦵 Uzun Pas ve Vuruş', icon: '🦵', stats: { gkKicking: 3, longPassing: 2, shotPower: 1 }, focus: 'Teknik' },
+                { name: '💪 Fizik ve Atlama', icon: '💪', stats: { jumping: 2, strength: 2, physical: 2 }, focus: 'Fiziksel' },
+                { name: '🧠 Taktik ve Oyun Okuma', icon: '🧠', stats: { vision: 2, reactions: 2, positioning: 2 }, focus: 'Taktiksel' }
+            ],
+            CB: [
+                { name: '🛡️ Savunma ve Müdahale', icon: '🛡️', stats: { standingTackle: 2, slidingTackle: 2, interceptions: 2 }, focus: 'Savunma' },
+                { name: '🎯 Kafa Vuruşu ve Hava Topu', icon: '🎯', stats: { headingAccuracy: 3, jumping: 2, strength: 1 }, focus: 'Fiziksel' },
+                { name: '🧠 Pozisyon ve Adam Markaj', icon: '🧠', stats: { marking: 3, positioning: 2, reactions: 1 }, focus: 'Taktiksel' },
+                { name: '🏃 Hız ve Çeviklik', icon: '🏃', stats: { pace: 2, acceleration: 2, agility: 2 }, focus: 'Atletizm' },
+                { name: '⚽ Pas ve Oyun Kurma', icon: '⚽', stats: { shortPassing: 2, longPassing: 2, vision: 1 }, focus: 'Teknik' }
+            ],
+            LB: [
+                { name: '⚡ Hız ve Dayanıklılık', icon: '⚡', stats: { pace: 3, stamina: 2, acceleration: 1 }, focus: 'Atletizm' },
+                { name: '📤 Orta ve Pas', icon: '📤', stats: { crossing: 3, shortPassing: 2, vision: 1 }, focus: 'Teknik' },
+                { name: '🛡️ Savunma ve Müdahale', icon: '🛡️', stats: { standingTackle: 2, interceptions: 2, marking: 2 }, focus: 'Savunma' },
+                { name: '🎮 Top Kontrolü ve Dribling', icon: '🎮', stats: { ballControl: 2, dribbling: 2, agility: 2 }, focus: 'Teknik' },
+                { name: '💪 Fizik ve Güç', icon: '💪', stats: { strength: 2, physical: 2, jumping: 1 }, focus: 'Fiziksel' }
+            ],
+            RB: [
+                { name: '⚡ Hız ve Dayanıklılık', icon: '⚡', stats: { pace: 3, stamina: 2, acceleration: 1 }, focus: 'Atletizm' },
+                { name: '📤 Orta ve Pas', icon: '📤', stats: { crossing: 3, shortPassing: 2, vision: 1 }, focus: 'Teknik' },
+                { name: '🛡️ Savunma ve Müdahale', icon: '🛡️', stats: { standingTackle: 2, interceptions: 2, marking: 2 }, focus: 'Savunma' },
+                { name: '🎮 Top Kontrolü ve Dribling', icon: '🎮', stats: { ballControl: 2, dribbling: 2, agility: 2 }, focus: 'Teknik' },
+                { name: '💪 Fizik ve Güç', icon: '💪', stats: { strength: 2, physical: 2, jumping: 1 }, focus: 'Fiziksel' }
+            ],
+            CDM: [
+                { name: '⚓ Müdahale ve Top Kesme', icon: '⚓', stats: { interceptions: 3, standingTackle: 2, aggression: 1 }, focus: 'Savunma' },
+                { name: '🧠 Pas ve Görüş', icon: '🧠', stats: { shortPassing: 2, longPassing: 2, vision: 2 }, focus: 'Taktiksel' },
+                { name: '💪 Fizik ve Güç', icon: '💪', stats: { strength: 2, stamina: 2, physical: 2 }, focus: 'Fiziksel' },
+                { name: '🎯 Uzun Şut ve Vuruş Gücü', icon: '🎯', stats: { longShots: 2, shotPower: 2, positioning: 1 }, focus: 'Hücum' },
+                { name: '🏃 Hız ve Reaksiyon', icon: '🏃', stats: { pace: 2, reactions: 2, acceleration: 1 }, focus: 'Atletizm' }
+            ],
+            CM: [
+                { name: '🧠 Pas ve Görüş', icon: '🧠', stats: { shortPassing: 3, vision: 2, longPassing: 1 }, focus: 'Taktiksel' },
+                { name: '🎮 Top Kontrolü ve Dribling', icon: '🎮', stats: { ballControl: 3, dribbling: 2, agility: 1 }, focus: 'Teknik' },
+                { name: '⚡ Hız ve Dayanıklılık', icon: '⚡', stats: { stamina: 3, pace: 2, acceleration: 1 }, focus: 'Atletizm' },
+                { name: '🎯 Şut ve Bitiricilik', icon: '🎯', stats: { longShots: 2, finishing: 2, positioning: 1 }, focus: 'Hücum' },
+                { name: '🛡️ Savunma ve Müdahale', icon: '🛡️', stats: { interceptions: 2, marking: 2, standingTackle: 1 }, focus: 'Savunma' }
+            ],
+            CAM: [
+                { name: '🎯 Şut ve Bitiricilik', icon: '🎯', stats: { longShots: 3, finishing: 2, positioning: 2 }, focus: 'Hücum' },
+                { name: '🎨 Yaratıcılık ve Pas', icon: '🎨', stats: { vision: 3, shortPassing: 2, curve: 2 }, focus: 'Taktiksel' },
+                { name: '🎮 Dribling ve Top Kontrolü', icon: '🎮', stats: { dribbling: 3, ballControl: 2, agility: 2 }, focus: 'Teknik' },
+                { name: '⚡ Hız ve Reaksiyon', icon: '⚡', stats: { acceleration: 2, reactions: 2, pace: 2 }, focus: 'Atletizm' },
+                { name: '⚽ Serbest Vuruş ve Korner', icon: '⚽', stats: { freeKick: 3, curve: 2, shotPower: 1 }, focus: 'Teknik' }
+            ],
+            LW: [
+                { name: '⚡ Hız ve İvme', icon: '⚡', stats: { pace: 3, acceleration: 2, sprintSpeed: 2 }, focus: 'Atletizm' },
+                { name: '🎮 Dribling ve Çeviklik', icon: '🎮', stats: { dribbling: 3, agility: 2, ballControl: 2 }, focus: 'Teknik' },
+                { name: '📤 Orta ve Pas', icon: '📤', stats: { crossing: 3, vision: 2, shortPassing: 1 }, focus: 'Taktiksel' },
+                { name: '🎯 Şut ve Bitiricilik', icon: '🎯', stats: { finishing: 2, shotPower: 2, positioning: 2 }, focus: 'Hücum' },
+                { name: '💪 Fizik ve Dayanıklılık', icon: '💪', stats: { stamina: 2, strength: 2, balance: 1 }, focus: 'Fiziksel' }
+            ],
+            RW: [
+                { name: '⚡ Hız ve İvme', icon: '⚡', stats: { pace: 3, acceleration: 2, sprintSpeed: 2 }, focus: 'Atletizm' },
+                { name: '🎮 Dribling ve Çeviklik', icon: '🎮', stats: { dribbling: 3, agility: 2, ballControl: 2 }, focus: 'Teknik' },
+                { name: '📤 Orta ve Pas', icon: '📤', stats: { crossing: 3, vision: 2, shortPassing: 1 }, focus: 'Taktiksel' },
+                { name: '🎯 Şut ve Bitiricilik', icon: '🎯', stats: { finishing: 2, shotPower: 2, positioning: 2 }, focus: 'Hücum' },
+                { name: '💪 Fizik ve Dayanıklılık', icon: '💪', stats: { stamina: 2, strength: 2, balance: 1 }, focus: 'Fiziksel' }
+            ],
+            ST: [
+                { name: '🎯 Bitiricilik ve Pozisyon', icon: '🎯', stats: { finishing: 3, positioning: 2, shotPower: 2 }, focus: 'Hücum' },
+                { name: '💪 Fizik ve Güç', icon: '💪', stats: { strength: 2, jumping: 2, aggression: 2 }, focus: 'Fiziksel' },
+                { name: '⚡ Hız ve İvme', icon: '⚡', stats: { pace: 3, acceleration: 2, sprintSpeed: 1 }, focus: 'Atletizm' },
+                { name: '🎮 Top Kontrolü ve Dribling', icon: '🎮', stats: { ballControl: 2, dribbling: 2, reactions: 2 }, focus: 'Teknik' },
+                { name: '🎨 Kafa Vuruşu ve Hava Topu', icon: '🎨', stats: { headingAccuracy: 3, jumping: 2, positioning: 1 }, focus: 'Fiziksel' }
+            ]
+        };
+
+        const objectives = [
+            { id: 1, text: 'Bir maçta gol at', target: 1, current: 0, type: 'goals', reward: 'Moral +10' },
+            { id: 2, text: 'İlk 11\'e çık', target: 1, current: 0, type: 'starter', reward: 'Maaş +20%' },
+            { id: 3, text: '5 maç oyna', target: 5, current: 0, type: 'matches', reward: 'Reyting +1' },
+            { id: 4, text: 'Ortalama not 7.0+ tut', target: 7.0, current: 0, type: 'rating', reward: 'Transfer İlgisi' },
+            { id: 5, text: 'Ayın Oyuncusu ol', target: 1, current: 0, type: 'motm', reward: 'Piyasa Değeri +50%' }
+        ];
+
+        let news = [];
+
+        function startCareer() {
+            player.name = document.getElementById('playerName').value || 'Genç Yetenek';
+            player.nationality = document.getElementById('nationality').value;
+            player.position = document.getElementById('position').value;
+            
+            player.rating = Math.floor(Math.random() * 5) + 63;
+            player.potential = Math.min(99, player.rating + Math.floor(Math.random() * 20) + 15);
+            
+            const clubList = clubs[player.leagueLevel];
+            player.club = clubList[Math.floor(Math.random() * clubList.length)];
+            player.league = leagues[player.leagueLevel].name;
+            player.salary = leagues[player.leagueLevel].salary;
+            
+            initializeStats();
+            calculateMarketValue();
+            
+            document.querySelector('.setup-screen').classList.remove('active');
+            document.querySelector('.game-screen').classList.add('active');
+            
+            updateUI();
+            renderTrainings();
+            renderCalendar();
+            renderObjectives();
+            addNews(`🎉 ${player.name} ${player.club}'e katıldı! Genç oyuncu kariyerine başlıyor.`);
+            showNotification(`🎊 Hoş geldin ${player.name}!\n${player.club} seni bekliyor!`);
+        }
+
+        function initializeStats() {
+            const baseRating = player.rating;
+            const positionStats = {
+                GK: ['gkReflexes', 'gkDiving', 'gkHandling', 'gkPositioning', 'gkKicking'],
+                CB: ['defense', 'physical', 'headingAccuracy', 'marking', 'standingTackle'],
+                LB: ['pace', 'stamina', 'crossing', 'defense', 'acceleration'],
+                RB: ['pace', 'stamina', 'crossing', 'defense', 'acceleration'],
+                CDM: ['defense', 'physical', 'interceptions', 'passing', 'stamina'],
+                CM: ['passing', 'dribbling', 'stamina', 'vision', 'ballControl'],
+                CAM: ['passing', 'dribbling', 'shooting', 'vision', 'finishing'],
+                LW: ['pace', 'dribbling', 'crossing', 'finishing', 'acceleration'],
+                RW: ['pace', 'dribbling', 'crossing', 'finishing', 'acceleration'],
+                ST: ['shooting', 'finishing', 'positioning', 'pace', 'physical']
+            };
+
+            const keyStats = positionStats[player.position] || ['pace', 'shooting', 'passing'];
+            
+            for (let stat in player.stats) {
+                if (keyStats.includes(stat)) {
+                    player.stats[stat] = baseRating + Math.floor(Math.random() * 8) - 2;
+                } else {
+                    player.stats[stat] = baseRating - Math.floor(Math.random() * 15) - 5;
+                }
+                player.stats[stat] = Math.max(30, Math.min(99, player.stats[stat]));
+            }
+            
+            recalculateOverall();
+        }
+
+        function recalculateOverall() {
+            const posMap = {
+                GK: ['gkReflexes', 'gkDiving', 'gkHandling', 'gkPositioning', 'gkKicking', 'reactions'],
+                CB: ['defense', 'marking', 'standingTackle', 'headingAccuracy', 'strength', 'interceptions'],
+                LB: ['pace', 'stamina', 'defense', 'crossing', 'marking', 'acceleration'],
+                RB: ['pace', 'stamina', 'defense', 'crossing', 'marking', 'acceleration'],
+                CDM: ['defense', 'interceptions', 'passing', 'stamina', 'strength', 'aggression'],
+                CM: ['passing', 'vision', 'ballControl', 'stamina', 'shortPassing', 'longPassing'],
+                CAM: ['passing', 'dribbling', 'shooting', 'vision', 'finishing', 'longShots'],
+                LW: ['pace', 'dribbling', 'crossing', 'finishing', 'acceleration', 'agility'],
+                RW: ['pace', 'dribbling', 'crossing', 'finishing', 'acceleration', 'agility'],
+                ST: ['shooting', 'finishing', 'positioning', 'pace', 'strength', 'shotPower']
+            };
+
+            const relevantStats = posMap[player.position] || ['pace', 'shooting', 'passing', 'dribbling', 'defense', 'physical'];
+            let sum = 0;
+            relevantStats.forEach(stat => {
+                sum += player.stats[stat] || 60;
+            });
+            player.rating = Math.round(sum / relevantStats.length);
+            
+            updateMainStats();
+        }
+
+        function updateMainStats() {
+            player.stats.pace = Math.round((player.stats.acceleration + player.stats.sprintSpeed) / 2);
+            player.stats.shooting = Math.round((player.stats.finishing + player.stats.shotPower + player.stats.longShots) / 3);
+            player.stats.passing = Math.round((player.stats.shortPassing + player.stats.vision + player.stats.crossing) / 3);
+            player.stats.dribbling = Math.round((player.stats.ballControl + player.stats.agility + player.stats.reactions) / 3);
+            player.stats.defense = Math.round((player.stats.marking + player.stats.standingTackle + player.stats.interceptions) / 3);
+            player.stats.physical = Math.round((player.stats.strength + player.stats.stamina + player.stats.jumping) / 3);
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + '-tab').classList.add('active');
+
+            if (tab === 'training') {
+                renderTrainings();
+            } else if (tab === 'career') {
+                renderObjectives();
+            }
+        }
+
+        function renderCalendar() {
+            const schedule = document.getElementById('matchSchedule');
+            schedule.innerHTML = '';
+
+            for (let i = 0; i < 3; i++) {
+                const weekNum = player.week + i;
+                if (weekNum > 38) break;
+
+                const weekDiv = document.createElement('div');
+                weekDiv.className = 'match-week';
+                
+                const opponent = clubs[player.leagueLevel][Math.floor(Math.random() * clubs[player.leagueLevel].length)];
+                const isHome = Math.random() > 0.5;
+                
+                let matchContent = `
+                    <h3 style="color: #00ff88; margin-bottom: 15px;">Hafta ${weekNum}</h3>
+                    <div class="match-item">
+                        <div class="match-teams">
+                            <span class="team-name ${isHome ? 'team-home' : 'team-away'}">${isHome ? player.club : opponent}</span>
+                            <span style="color: #666;">vs</span>
+                            <span class="team-name ${!isHome ? 'team-home' : 'team-away'}">${!isHome ? player.club : opponent}</span>
+                        </div>
+                        <div class="match-actions">
+                `;
+
+                if (weekNum === player.week) {
+                    matchContent += `<button class="btn btn-primary" onclick="playMatch('${opponent}', ${isHome})">⚽ Maç Oyna</button>`;
+                } else {
+                    matchContent += `<span style="color: #666;">Yaklaşan Maç</span>`;
+                }
+
+                matchContent += `
+                        </div>
+                    </div>
+                `;
+
+                weekDiv.innerHTML = matchContent;
+                schedule.appendChild(weekDiv);
+            }
+        }
+
+        function renderTrainings() {
+            const container = document.getElementById('trainingOptions');
+            container.innerHTML = '';
+
+            const posTrainings = trainings[player.position] || trainings['ST'];
+
+            posTrainings.forEach((training, index) => {
+                const card = document.createElement('div');
+                card.className = 'training-card';
+                
+                if (player.trainingCompleted) {
+                    card.classList.add('disabled');
+                }
+                
+                if (selectedTraining === index) {
+                    card.classList.add('selected');
+                }
+
+                let statsText = '';
+                for (let stat in training.stats) {
+                    const val = training.stats[stat];
+                    statsText += `+${val} ${stat}, `;
+                }
+                statsText = statsText.slice(0, -2);
+
+                card.innerHTML = `
+                    <div class="training-icon">${training.icon}</div>
+                    <div class="training-title">${training.name}</div>
+                    <div class="training-stats">📊 ${statsText}</div>
+                    <div style="margin-top: 10px; font-size: 0.85em; color: #00ff88;">🎯 ${training.focus}</div>
+                `;
+
+                if (!player.trainingCompleted) {
+                    card.onclick = () => selectTraining(index);
+                }
+
+                container.appendChild(card);
+            });
+        }
+
+        function selectTraining(index) {
+            if (player.trainingCompleted) return;
+            selectedTraining = index;
+            renderTrainings();
+            document.getElementById('confirmTrainingBtn').disabled = false;
+        }
+
+        function confirmTraining() {
+            if (selectedTraining === null || player.trainingCompleted) return;
+
+            const posTrainings = trainings[player.position] || trainings['ST'];
+            const training = posTrainings[selectedTraining];
+
+            let improved = false;
+            for (let stat in training.stats) {
+                const increase = training.stats[stat];
+                if (player.stats[stat] < 99) {
+                    player.stats[stat] = Math.min(99, player.stats[stat] + increase);
+                    improved = true;
+                }
+            }
+
+            if (improved) {
+                recalculateOverall();
+                calculateMarketValue();
+                addNews(`📈 ${player.name} antrenmanla gelişti! ${training.name} tamamlandı.`);
+            }
+
+            player.trainingCompleted = true;
+            player.weeklyTraining = training.name;
+            selectedTraining = null;
+
+            updateUI();
+            renderTrainings();
+            showNotification(`✅ Antrenman Tamamlandı!\n${training.name}`);
+        }
+
+        function playMatch(opponent, isHome) {
+            if (matchSimulating) return;
+
+            if (!player.trainingCompleted) {
+                showNotification('⚠️ Önce bu haftanın antrenmanını tamamlayın!');
+                return;
+            }
+
+            matchSimulating = true;
+
+            currentMatch = {
+                opponent: opponent,
+                isHome: isHome,
+                teamScore: 0,
+                oppScore: 0,
+                playerGoals: 0,
+                playerAssists: 0,
+                events: [],
+                minute: 0,
+                situations: [],
+                currentSituation: 0
+            };
+
+            if (player.status === 'reserve') {
+                simulateReserveMatch();
+            } else {
+                generateSituations();
+                showMatchInterface();
+            }
+        }
+
+        function simulateReserveMatch() {
+            const teamScore = Math.floor(Math.random() * 4);
+            const oppScore = Math.floor(Math.random() * 4);
+
+            player.career.matches++;
+            player.week++;
+            player.trainingCompleted = false;
+
+            if (player.week > 38) {
+                player.week = 1;
+                player.season++;
+                player.age++;
+                addNews(`🎊 Sezon tamamlandı! ${player.name} yeni sezona hazır.`);
+            }
+
+            addNews(`📋 ${player.name} rezervdeydi. Maç: ${teamScore}-${oppScore}`);
+            updateUI();
+            renderCalendar();
+            matchSimulating = false;
+            showNotification(`📋 Rezerv Oyuncu\nMaç bittiği için oynamadınız.\nSonuç: ${teamScore}-${oppScore}`);
+        }
+
+        function generateSituations() {
+            const moraleModifier = player.morale / 100;
+            const basePerformance = player.rating * moraleModifier;
+            const situationCount = player.status === 'starter' ? Math.floor(Math.random() * 4) + 5 : Math.floor(Math.random() * 2) + 2;
+
+            currentMatch.situations = [];
+
+            for (let i = 0; i < situationCount; i++) {
+                const minute = Math.floor(Math.random() * 85) + 5;
+                const situation = createSituation(minute);
+                if (situation) currentMatch.situations.push(situation);
+            }
+
+            currentMatch.situations.sort((a, b) => a.minute - b.minute);
+        }
+
+        function createSituation(minute) {
+            const pos = player.position;
+            const situations = {
+                GK: [
+                    {
+                        title: '🚨 1e1 Pozisyon!',
+                        desc: 'Rakip forvet karşınızda! Ne yapacaksın?',
+                        choices: [
+                            { text: '🧤 Refleks Kurtarışı', stat: 'gkReflexes', successBonus: 0.5 },
+                            { text: '📐 Açı Kapa', stat: 'gkPositioning', successBonus: 0.3 },
+                            { text: '🏃 Çık ve Engelle', stat: 'reactions', successBonus: 0.4 }
+                        ]
+                    },
+                    {
+                        title: '⚡ Uzun Top!',
+                        desc: 'Forvet arkana koşuyor, ne yapmalısın?',
+                        choices: [
+                            { text: '🦵 Uzun Pas Karşıla', stat: 'gkKicking', successBonus: 0.4 },
+                            { text: '🤾 Elle Yakalama', stat: 'gkHandling', successBonus: 0.3 },
+                            { text: '📍 Pozisyon Al', stat: 'gkPositioning', successBonus: 0.2 }
+                        ]
+                    }
+                ],
+                CB: [
+                    {
+                        title: '⚔️ Hücum Önleme!',
+                        desc: 'Rakip forvet topla geliyor!',
+                        choices: [
+                            { text: '🛡️ Ayakta Müdahale', stat: 'standingTackle', successBonus: 0.4 },
+                            { text: '🏃 Kayarak Müdahale', stat: 'slidingTackle', successBonus: 0.5 },
+                            { text: '👤 Adam Markajı', stat: 'marking', successBonus: 0.3 }
+                        ]
+                    },
+                    {
+                        title: '🎯 Korner Vuruşu!',
+                        desc: 'Rakip korner kullanıyor!',
+                        choices: [
+                            { text: '🦘 Kafayla Uzaklaştır', stat: 'headingAccuracy', successBonus: 0.4 },
+                            { text: '💪 İti Kaydır', stat: 'strength', successBonus: 0.3 },
+                            { text: '📍 Pozisyon Al', stat: 'positioning', successBonus: 0.2 }
+                        ]
+                    }
+                ],
+                ST: [
+                    {
+                        title: '⚽ GOL ŞANSI!',
+                        desc: 'Ceza sahasında topla baş başasın!',
+                        choices: [
+                            { text: '🎯 Güçlü Vuruş', stat: 'shotPower', successBonus: 0.6 },
+                            { text: '🎨 Placeli Vuruş', stat: 'finishing', successBonus: 0.5 },
+                            { text: '🎪 Çalım At ve Vur', stat: 'dribbling', successBonus: 0.7 }
+                        ]
+                    },
+                    {
+                        title: '🎯 Hava Topu!',
+                        desc: 'Orta geliyor, kafayla vurmalısın!',
+                        choices: [
+                            { text: '🦘 Kafayla Bitir', stat: 'headingAccuracy', successBonus: 0.5 },
+                            { text: '💪 Rakibi Geç', stat: 'strength', successBonus: 0.4 },
+                            { text: '⚡ Hızlıca Koş', stat: 'pace', successBonus: 0.3 }
+                        ]
+                    }
+                ],
+                CAM: [
+                    {
+                        title: '🎨 Pas Seçeneği!',
+                        desc: 'Forvetler açık, ne yapacaksın?',
+                        choices: [
+                            { text: '👁️ Ara Pas', stat: 'vision', successBonus: 0.5 },
+                            { text: '🎯 Uzun Pas', stat: 'longPassing', successBonus: 0.4 },
+                            { text: '⚽ Kendim Şut Çek', stat: 'longShots', successBonus: 0.6 }
+                        ]
+                    }
+                ],
+                LW: [
+                    {
+                        title: '🏃 Kanaddan Hücum!',
+                        desc: 'Kanaddan topla ilerliyorsun!',
+                        choices: [
+                            { text: '⚡ Hızla Geç', stat: 'pace', successBonus: 0.4 },
+                            { text: '🎮 Çalım At', stat: 'dribbling', successBonus: 0.5 },
+                            { text: '📤 Orta Yap', stat: 'crossing', successBonus: 0.4 }
+                        ]
+                    }
+                ],
+                RW: [
+                    {
+                        title: '🏃 Kanaddan Hücum!',
+                        desc: 'Kanaddan topla ilerliyorsun!',
+                        choices: [
+                            { text: '⚡ Hızla Geç', stat: 'pace', successBonus: 0.4 },
+                            { text: '🎮 Çalım At', stat: 'dribbling', successBonus: 0.5 },
+                            { text: '📤 Orta Yap', stat: 'crossing', successBonus: 0.4 }
+                        ]
+                    }
+                ]
+            };
+
+            const posSituations = situations[pos] || situations['ST'];
+            return { ...posSituations[Math.floor(Math.random() * posSituations.length)], minute };
+        }
+
+        function showMatchInterface() {
+            const calendarTab = document.getElementById('calendar-tab');
+            calendarTab.innerHTML = `
+                <div class="match-simulator">
+                    <div class="match-header">
+                        <h2 style="color: #00ff88;">⚽ ${currentMatch.isHome ? player.club : currentMatch.opponent} vs ${!currentMatch.isHome ? player.club : currentMatch.opponent}</h2>
+                        <p>Hafta ${player.week} - ${player.league}</p>
+                        <div id="liveScore" style="text-align: center; font-size: 2em; color: #ffd700; margin: 20px 0;">0 - 0</div>
+                    </div>
+                    <div id="situationContainer"></div>
+                    <div class="match-events" id="matchEvents"></div>
+                </div>
+            `;
+
+            showNextSituation();
+        }
+
+        function showNextSituation() {
+            if (currentMatch.currentSituation >= currentMatch.situations.length) {
+                finishMatch();
+                return;
+            }
+
+            const situation = currentMatch.situations[currentMatch.currentSituation];
+            const container = document.getElementById('situationContainer');
+
+            container.innerHTML = `
+                <div class="situation-box">
+                    <div class="situation-title">${situation.minute}' - ${situation.title}</div>
+                    <div class="situation-desc">${situation.desc}</div>
+                    <div class="choices-grid" id="choicesGrid"></div>
+                </div>
+            `;
+
+            const choicesGrid = document.getElementById('choicesGrid');
+            situation.choices.forEach((choice, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-action';
+                btn.innerHTML = choice.text;
+                btn.onclick = () => handleChoice(choice, situation.minute);
+                choicesGrid.appendChild(btn);
+            });
+        }
+
+        function handleChoice(choice, minute) {
+            const statValue = player.stats[choice.stat] || 60;
+            const successChance = (statValue / 100) + choice.successBonus;
+            const success = Math.random() < successChance;
+
+            const eventsDiv = document.getElementById('matchEvents');
+            const eventDiv = document.createElement('div');
+            eventDiv.className = `event-item ${success ? 'success' : 'fail'}`;
+
+            if (success) {
+                if (choice.successBonus >= 0.5) {
+                    if (Math.random() < 0.6) {
+                        currentMatch.teamScore++;
+                        currentMatch.playerGoals++;
+                        eventDiv.innerHTML = `<strong>${minute}'</strong> ⚽ GOL! ${player.name} - ${choice.text} başarılı!`;
+                        eventDiv.className = 'event-item goal';
+                    } else {
+                        currentMatch.teamScore++;
+                        currentMatch.playerAssists++;
+                        eventDiv.innerHTML = `<strong>${minute}'</strong> 🎯 ASİST! ${player.name} - ${choice.text} ile asist yaptı!`;
+                        eventDiv.className = 'event-item assist';
+                    }
+                } else {
+                    eventDiv.innerHTML = `<strong>${minute}'</strong> ✅ ${player.name} - ${choice.text} başarılı!`;
+                }
+            } else {
+                if (Math.random() < 0.3) {
+                    currentMatch.oppScore++;
+                    eventDiv.innerHTML = `<strong>${minute}'</strong> ❌ ${player.name} - ${choice.text} başarısız! Rakip gol attı!`;
+                } else {
+                    eventDiv.innerHTML = `<strong>${minute}'</strong> ⚠️ ${player.name} - ${choice.text} başarısız oldu.`;
+                }
+            }
+
+            eventsDiv.insertBefore(eventDiv, eventsDiv.firstChild);
+            document.getElementById('liveScore').textContent = `${currentMatch.teamScore} - ${currentMatch.oppScore}`;
+
+            currentMatch.currentSituation++;
+            setTimeout(showNextSituation, 1500);
+        }
+
+        function finishMatch() {
+            const { teamScore, oppScore, playerGoals, playerAssists } = currentMatch;
+
+            player.career.matches++;
+            player.career.goals += playerGoals;
+            player.career.assists += playerAssists;
+
+            if (player.status === 'starter') {
+                player.career.starterMatches++;
+            } else {
+                player.career.benchMatches++;
+            }
+
+            const moraleModifier = player.morale / 100;
+            const basePerformance = player.rating * moraleModifier;
+            const matchRating = calculateMatchRating(basePerformance, playerGoals, playerAssists, teamScore, oppScore);
+            
+            player.career.totalRating += matchRating;
+            player.career.avgRating = (player.career.totalRating / player.career.matches).toFixed(1);
+
+            if (matchRating >= 8.5) {
+                player.career.motm++;
+                addNews(`🏆 ${player.name} Maçın Adamı seçildi! Not: ${matchRating.toFixed(1)}`);
+                player.morale = Math.min(100, player.morale + 15);
+            }
+
+            if (player.position === 'GK' && oppScore === 0) {
+                player.career.cleanSheets++;
+            }
+
+            player.week++;
+            player.trainingCompleted = false;
+
+            updateObjectives(playerGoals, playerAssists, matchRating);
+
+            if (matchRating >= 7.5) {
+                player.morale = Math.min(100, player.morale + 5);
+            } else if (matchRating < 6.0) {
+                player.morale = Math.max(0, player.morale - 10);
+            }
+
+            updateTeamStatus(matchRating);
+            checkTransferOffers();
+
+            if (player.week > 38) {
+                player.week = 1;
+                player.season++;
+                player.age++;
+                addNews(`🎊 Sezon tamamlandı! ${player.name} yeni sezona hazır.`);
+            }
+
+            const eventsDiv = document.getElementById('matchEvents');
+            const resultDiv = document.createElement('div');
+            resultDiv.innerHTML = `
+                <div style="margin-top: 30px; padding: 25px; background: rgba(0, 255, 136, 0.1); border-radius: 15px; border: 2px solid #00ff88;">
+                    <h2 style="color: #00ff88; margin-bottom: 20px;">📊 Maç Sonucu</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">${teamScore > oppScore ? '✅ Galibiyet' : teamScore < oppScore ? '❌ Mağlubiyet' : '🟡 Beraberlik'}</div>
+                            <div class="stat-label">${teamScore} - ${oppScore}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${matchRating.toFixed(1)}</div>
+                            <div class="stat-label">⭐ Notunuz</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${playerGoals}</div>
+                            <div class="stat-label">⚽ Goller</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${playerAssists}</div>
+                            <div class="stat-label">🎯 Asistler</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">90'</div>
+                            <div class="stat-label">🏃 Süre</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">+${(player.salary / 1000).toFixed(0)}K €</div>
+                            <div class="stat-label">💰 Kazanç</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="returnToCalendar()" style="width: 100%; margin-top: 20px;">📅 Takvime Dön</button>
+                </div>
+            `;
+            eventsDiv.after(resultDiv);
+
+            updateUI();
+            matchSimulating = false;
+        }
+
+        function calculateMatchRating(basePerf, goals, assists, teamScore, oppScore) {
+            let rating = 6.0;
+            rating += (basePerf / 100) * 2;
+            rating += goals * 1.5;
+            rating += assists * 1.0;
+
+            if (teamScore > oppScore) rating += 0.5;
+            else if (teamScore < oppScore) rating -= 0.5;
+
+            if (player.position === 'GK' && oppScore === 0) rating += 1.0;
+
+            return Math.max(4.0, Math.min(10.0, rating));
+        }
+
+        function updateTeamStatus(rating) {
+            const performanceThreshold = player.status === 'reserve' ? 7.0 : 
+                                        player.status === 'bench' ? 7.5 : 8.0;
+
+            if (rating >= performanceThreshold && player.career.matches > 3) {
+                if (player.status === 'reserve') {
+                    player.status = 'bench';
+                    player.morale = Math.min(100, player.morale + 10);
+                    addNews(`📈 ${player.name} yedek kulübesine yükseldi!`);
+                    showNotification('🎉 Tebrikler!\nYedek kulübesine yükseldiniz!');
+                } else if (player.status === 'bench' && player.career.starterMatches > 5) {
+                    player.status = 'starter';
+                    player.morale = Math.min(100, player.morale + 20);
+                    player.salary = Math.floor(player.salary * 1.5);
+                    addNews(`🌟 ${player.name} artık ilk 11'de!`);
+                    showNotification('🌟 Muhteşem!\nİlk 11\'e yükseldiniz!\nMaaş artışı aldınız!');
+                }
+            } else if (rating < 5.5 && player.career.matches > 5) {
+                if (player.status === 'starter') {
+                    player.status = 'bench';
+                    player.morale = Math.max(0, player.morale - 20);
+                    addNews(`📉 ${player.name} yedek kulübesine düştü.`);
+                } else if (player.status === 'bench') {
+                    player.status = 'reserve';
+                    player.morale = Math.max(0, player.morale - 15);
+                    addNews(`📉 ${player.name} rezerve düştü.`);
+                }
+            }
+        }
+
+        function checkTransferOffers() {
+            if (player.rating < 70 || player.career.matches < 10) return;
+
+            const interestChance = (player.rating - 65) / 100 + (player.career.avgRating - 6) / 10;
+
+            if (Math.random() < interestChance) {
+                const currentLevel = player.leagueLevel;
+                const targetLevel = Math.max(0, currentLevel - 1);
+
+                if (targetLevel !== currentLevel) {
+                    const newClubs = clubs[targetLevel];
+                    const offeringClub = newClubs[Math.floor(Math.random() * newClubs.length)];
+                    const newLeague = leagues[targetLevel];
+
+                    const salaryIncrease = Math.floor(newLeague.salary * (1 + Math.random() * 0.5));
+
+                    showTransferOffer(offeringClub, newLeague.name, salaryIncrease, targetLevel);
+                }
+            }
+        }
+
+        function showTransferOffer(club, league, salary, level) {
+            const offersDiv = document.getElementById('transferOffers');
+            offersDiv.innerHTML = `
+                <div class="offer-card">
+                    <h3>🎉 TRANSFER TEKLİFİ!</h3>
+                    <p style="font-size: 1.3em; margin: 15px 0;"><strong>${club}</strong> sizi transfer etmek istiyor!</p>
+                    <div class="offer-details">
+                        <div class="offer-stat">
+                            <div style="font-size: 1.5em;">🏆</div>
+                            <div><strong>${league}</strong></div>
+                        </div>
+                        <div class="offer-stat">
+                            <div style="font-size: 1.5em;">💰</div>
+                            <div><strong>${(salary / 1000).toFixed(0)}K €</strong>/hafta</div>
+                        </div>
+                        <div class="offer-stat">
+                            <div style="font-size: 1.5em;">📈</div>
+                            <div><strong>+${Math.floor((salary / player.salary - 1) * 100)}%</strong> artış</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 15px; margin-top: 20px;">
+                        <button class="btn btn-primary" onclick="acceptTransfer('${club}', '${league}', ${salary}, ${level})" style="flex: 1;">✅ Kabul Et</button>
+                        <button class="btn btn-danger" onclick="rejectTransfer()" style="flex: 1;">❌ Reddet</button>
+                    </div>
+                </div>
+            `;
+
+            addNews(`💼 ${club} ${player.name} için teklif yaptı!`);
+        }
+
+        function acceptTransfer(club, league, salary, level) {
+            player.club = club;
+            player.league = league;
+            player.salary = salary;
+            player.leagueLevel = level;
+            player.contractYears = 3;
+            player.morale = Math.min(100, player.morale + 25);
+
+            if (player.status === 'reserve') {
+                player.status = 'bench';
+            }
+
+            calculateMarketValue();
+
+            document.getElementById('transferOffers').innerHTML = '<p style="color: #aaa; text-align: center; padding: 40px;">Şu anda transfer teklifiniz bulunmamaktadır.</p>';
+
+            addNews(`✅ ${player.name} ${club}'e transfer oldu!`);
+            showNotification(`🎊 Tebrikler!\n${club}'e transfer oldunuz!\n${league}'de yeni maceranız başlıyor!`);
+            updateUI();
+            renderCalendar();
+        }
+
+        function rejectTransfer() {
+            document.getElementById('transferOffers').innerHTML = '<p style="color: #aaa; text-align: center; padding: 40px;">Şu anda transfer teklifiniz bulunmamaktadır.</p>';
+            addNews(`❌ ${player.name} transfer teklifini reddetti.`);
+        }
+
+        function calculateMarketValue() {
+            const baseValue = leagues[player.leagueLevel].marketMult * 50000;
+            const ratingMult = player.rating / 60;
+            const ageFactor = player.age < 23 ? 1.5 : player.age < 28 ? 1.2 : player.age < 32 ? 1.0 : 0.6;
+            const performanceMult = player.career.avgRating > 0 ? player.career.avgRating / 6.0 : 1;
+
+            player.marketValue = Math.floor(baseValue * ratingMult * ageFactor * performanceMult);
+        }
+
+        function updateObjectives(goals, assists, rating) {
+            objectives.forEach(obj => {
+                if (obj.type === 'goals') obj.current += goals;
+                else if (obj.type === 'assists') obj.current += assists;
+                else if (obj.type === 'matches') obj.current++;
+                else if (obj.type === 'rating') obj.current = parseFloat(player.career.avgRating);
+                else if (obj.type === 'motm') obj.current = player.career.motm;
+                else if (obj.type === 'starter' && player.status === 'starter') obj.current = 1;
+
+                if (obj.current >= obj.target && obj.current < obj.target + 2) {
+                    addNews(`🎯 Hedef tamamlandı: ${obj.text}!`);
+                    applyObjectiveReward(obj);
+                }
+            });
+        }
+
+        function applyObjectiveReward(obj) {
+            if (obj.reward.includes('Moral')) {
+                player.morale = Math.min(100, player.morale + 10);
+            } else if (obj.reward.includes('Maaş')) {
+                player.salary = Math.floor(player.salary * 1.2);
+            } else if (obj.reward.includes('Reyting')) {
+                player.rating++;
+            } else if (obj.reward.includes('Piyasa')) {
+                player.marketValue = Math.floor(player.marketValue * 1.5);
+            }
+        }
+
+        function renderObjectives() {
+            const objList = document.getElementById('objectivesList');
+            objList.innerHTML = '';
+
+            objectives.forEach(obj => {
+                const progress = Math.min(100, (obj.current / obj.target) * 100);
+                const completed = obj.current >= obj.target;
+
+                const objDiv = document.createElement('div');
+                objDiv.className = `objective-card ${completed ? 'completed' : ''}`;
+                objDiv.innerHTML = `
+                    <div style="flex: 1;">
+                        <h4 style="color: ${completed ? '#ffd700' : '#00ff88'};">${completed ? '✅' : '🎯'} ${obj.text}</h4>
+                        <p style="font-size: 0.9em; color: #aaa; margin-top: 5px;">Ödül: ${obj.reward}</p>
+                        <div class="objective-progress">
+                            <div class="objective-bar">
+                                <div class="objective-bar-fill" style="width: ${progress}%"></div>
+                            </div>
+                            <p style="font-size: 0.85em; color: #aaa; margin-top: 5px;">${obj.current} / ${obj.target}</p>
+                        </div>
+                    </div>
+                `;
+                objList.appendChild(objDiv);
+            });
+        }
+
+        function returnToCalendar() {
+            renderCalendar();
+        }
+
+        function addNews(text) {
+            const time = `Sezon ${player.season}/25, Hafta ${player.week}`;
+            news.unshift({ text, time });
+            if (news.length > 10) news.pop();
+            renderNews();
+        }
+
+        function renderNews() {
+            const feed = document.getElementById('newsFeed');
+            feed.innerHTML = '';
+
+            news.forEach(item => {
+                const newsDiv = document.createElement('div');
+                newsDiv.className = 'news-item';
+                newsDiv.innerHTML = `
+                    <p>${item.text}</p>
+                    <div class="news-time">${item.time}</div>
+                `;
+                feed.appendChild(newsDiv);
+            });
+        }
+
+        function updateUI() {
+            document.getElementById('ratingBadge').textContent = player.rating;
+            document.getElementById('potentialBadge').textContent = `POT: ${player.potential}`;
+            document.getElementById('playerNameDisplay').textContent = player.name;
+            document.getElementById('positionDisplay').textContent = player.position;
+            document.getElementById('nationalityDisplay').textContent = player.nationality;
+
+            const statusBadge = document.getElementById('statusBadge');
+            statusBadge.className = 'status-badge';
+            if (player.status === 'starter') {
+                statusBadge.className += ' status-starter';
+                statusBadge.textContent = '⭐ İLK 11';
+            } else if (player.status === 'bench') {
+                statusBadge.className += ' status-bench';
+                statusBadge.textContent = '🪑 YEDEK';
+            } else {
+                statusBadge.className += ' status-reserve';
+                statusBadge.textContent = '📋 REZERV';
+            }
+
+            document.getElementById('walletAmount').textContent = (player.salary / 1000).toFixed(0) + ',000 €';
+
+            const moraleText = player.morale > 80 ? 'Mükemmel' : player.morale > 60 ? 'İyi' : player.morale > 40 ? 'Orta' : 'Düşük';
+            const moraleColor = player.morale > 80 ? '#00ff88' : player.morale > 60 ? '#ffd700' : player.morale > 40 ? '#ffa500' : '#ff4444';
+            document.getElementById('moraleText').textContent = moraleText;
+            document.getElementById('moraleFill').style.width = player.morale + '%';
+            document.getElementById('moraleFill').style.background = moraleColor;
+            document.getElementById('moraleFill').textContent = player.morale + '%';
+
+            updateStatBar('pace', player.stats.pace);
+            updateStatBar('shooting', player.stats.shooting);
+            updateStatBar('passing', player.stats.passing);
+            updateStatBar('defense', player.stats.defense);
+            updateStatBar('physical', player.stats.physical);
+
+            document.getElementById('season').textContent = player.season + '/' + (player.season + 1);
+            document.getElementById('weekNumber').textContent = player.week;
+            document.getElementById('clubName').textContent = player.club;
+            document.getElementById('leagueName').textContent = player.league;
+            document.getElementById('salary').textContent = (player.salary / 1000).toFixed(0) + ',000';
+
+            document.getElementById('contractClub').textContent = player.club;
+            document.getElementById('contractSalary').textContent = (player.salary / 1000).toFixed(0) + ',000 €/hafta';
+            document.getElementById('marketValue').textContent = (player.marketValue / 1000).toFixed(0) + ',000 €';
+
+            document.getElementById('totalMatches').textContent = player.career.matches;
+            document.getElementById('totalGoals').textContent = player.career.goals;
+            document.getElementById('totalAssists').textContent = player.career.assists;
+            document.getElementById('avgRating').textContent = player.career.avgRating;
+            document.getElementById('motmCount').textContent = player.career.motm;
+            document.getElementById('cleanSheets').textContent = player.career.cleanSheets;
+        }
+
+        function updateStatBar(stat, value) {
+            const valueEl = document.getElementById(stat + 'Value');
+            const barEl = document.getElementById(stat + 'Bar');
+            if (valueEl && barEl) {
+                valueEl.textContent = value;
+                barEl.style.width = value + '%';
+                barEl.textContent = value;
+            }
+        }
+
+        function showNotification(message) {
+            const notif = document.getElementById('notification');
+            notif.textContent = message;
+            notif.classList.add('show');
+            setTimeout(() => {
+                notif.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
