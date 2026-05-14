@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Futbol Kariyer Simülatörü</title>
+    <style>
+        :root {
+            --primary: #2ecc71;
+            --secondary: #27ae60;
+            --dark: #2c3e50;
+            --light: #ecf0f1;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark);
+            color: var(--light);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #game-container {
+            background: #34495e;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .hidden { display: none; }
+
+        h1 { color: var(--primary); margin-bottom: 20px; }
+
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: none;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        button:hover { background-color: var(--secondary); }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: rgba(255,255,255,0.1);
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        #log {
+            height: 100px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: left;
+            margin-top: 15px;
+        }
+
+        .progress-bar {
+            background: #eee;
+            height: 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+
+        .progress-fill {
+            background: var(--primary);
+            height: 100%;
+            width: 0%;
+            border-radius: 5px;
+            transition: width 0.5s;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- Karakter Oluşturma Ekranı -->
+    <div id="setup-screen">
+        <h1>Kariyerine Başla</h1>
+        <input type="text" id="player-name" placeholder="Adınız" value="Ali">
+        <select id="player-country">
+            <option value="Türkiye">Türkiye</option>
+            <option value="Brezilya">Brezilya</option>
+            <option value="Arjantin">Arjantin</option>
+            <option value="Almanya">Almanya</option>
+        </select>
+        <select id="player-position">
+            <option value="Forvet">Forvet</option>
+            <option value="Orta Saha">Orta Saha</option>
+            <option value="Defans">Defans</option>
+            <option value="Kaleci">Kaleci</option>
+        </select>
+        <button onclick="startGame()">Oyuna Başla</button>
+    </div>
+
+    <!-- Ana Oyun Ekranı -->
+    <div id="game-screen" class="hidden">
+        <h2 id="display-info">Hoşgeldin!</h2>
+        <p id="display-team">Takım: Serbest Oyuncu</p>
+        
+        <div class="stats-grid">
+            <div class="stat-card">Güç: <span id="stat-power">10</span></div>
+            <div class="stat-card">Hız: <span id="stat-speed">10</span></div>
+            <div class="stat-card">Teknik: <span id="stat-tech">10</span></div>
+            <div class="stat-card">Enerji: <span id="stat-energy">100</span>%</div>
+        </div>
+
+        <div class="stat-card" style="margin-bottom: 10px;">
+            Para: <span id="stat-money">0</span> ₺
+        </div>
+
+        <button onclick="train()">Antrenman Yap (-20 Enerji)</button>
+        <button onclick="playMatch()" id="match-btn">Maça Çık (-40 Enerji)</button>
+        <button onclick="rest()" style="background-color: #3498db;">Dinlen (+50 Enerji)</button>
+        <button onclick="resetGame()" style="background-color: #e74c3c; margin-top: 20px; font-size: 12px;">Kariyeri Sıfırla</button>
+
+        <div id="log">Kariyer günlüğü başlatıldı...</div>
+    </div>
+</div>
+
+<script>
+    // Kullanıcı verilerine göre başlangıç değerleri
+    let player = {
+        name: "Ali", // Varsayılan isim Ali olarak ayarlandı
+        country: "Türkiye", // Varsayılan ülke Türkiye
+        position: "Forvet",
+        power: 10,
+        speed: 10,
+        tech: 10,
+        energy: 100,
+        money: 0,
+        matches: 0
+    };
+
+    function startGame() {
+        player.name = document.getElementById('player-name').value || "Ali";
+        player.country = document.getElementById('player-country').value;
+        player.position = document.getElementById('player-position').value;
+
+        if(localStorage.getItem('footballPlayer')) {
+            player = JSON.parse(localStorage.getItem('footballPlayer'));
+        }
+
+        document.getElementById('setup-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        updateUI();
+        addLog(`Kariyer başladı! Başarılar ${player.name}.`);
+    }
+
+    function updateUI() {
+        document.getElementById('display-info').innerText = `${player.name} (${player.country}) - ${player.position}`;
+        document.getElementById('stat-power').innerText = player.power;
+        document.getElementById('stat-speed').innerText = player.speed;
+        document.getElementById('stat-tech').innerText = player.tech;
+        document.getElementById('stat-energy').innerText = player.energy;
+        document.getElementById('stat-money').innerText = player.money;
+        
+        localStorage.setItem('footballPlayer', JSON.stringify(player));
+    }
+
+    function addLog(msg) {
+        const logDiv = document.getElementById('log');
+        logDiv.innerHTML = `> ${msg}<br>` + logDiv.innerHTML;
+    }
+
+    function train() {
+        if (player.energy >= 20) {
+            player.energy -= 20;
+            player.power += Math.floor(Math.random() * 3);
+            player.tech += Math.floor(Math.random() * 2);
+            addLog("Sıkı bir antrenman yaptın, yeteneklerin gelişti!");
+            updateUI();
+        } else {
+            addLog("Çok yorgunsun, antrenman yapamazsın!");
+        }
+    }
+
+    function playMatch() {
+        if (player.energy >= 40) {
+            player.energy -= 40;
+            player.matches++;
+            let earnings = 500 + (player.power * 10);
+            player.money += earnings;
+            
+            let goalChance = (player.power + player.tech) / 10;
+            let goals = Math.floor(Math.random() * goalChance);
+            
+            addLog(`Maç bitti! ${goals} gol attın ve ${earnings} ₺ kazandın.`);
+            updateUI();
+        } else {
+            addLog("Maça çıkacak enerjin yok, dinlenmelisin!");
+        }
+    }
+
+    function rest() {
+        player.energy = Math.min(100, player.energy + 50);
+        addLog("Güzelce dinlendin, enerji topladın.");
+        updateUI();
+    }
+
+    function resetGame() {
+        if(confirm("Tüm kariyerini silmek istediğine emin misin?")) {
+            localStorage.removeItem('footballPlayer');
+            location.reload();
+        }
+    }
+
+    // Sayfa yüklendiğinde eski kayıt varsa kontrol et
+    window.onload = () => {
+        if(localStorage.getItem('footballPlayer')) {
+            // İstersen direkt başlatabilirsin
+        }
+    }
+</script>
+
+</body>
+</html>
