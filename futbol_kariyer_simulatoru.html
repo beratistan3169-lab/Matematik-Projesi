@@ -1,0 +1,611 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); color: var(--color-text-primary); }
+  .screen { display: none; padding: 1rem 0; }
+  .screen.active { display: block; }
+  .card { background: var(--color-background-primary); border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-lg); padding: 1rem 1.25rem; margin-bottom: 12px; }
+  .section-title { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .stat-box { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px; }
+  .stat-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 2px; }
+  .stat-val { font-size: 20px; font-weight: 500; }
+  .bar-wrap { background: var(--color-background-secondary); border-radius: 20px; height: 8px; margin-top: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 20px; transition: width 0.4s; }
+  .btn { display: block; width: 100%; padding: 11px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: var(--color-background-primary); color: var(--color-text-primary); font-size: 15px; font-weight: 500; cursor: pointer; margin-bottom: 8px; text-align: left; transition: background 0.15s; }
+  .btn:hover { background: var(--color-background-secondary); }
+  .btn i { margin-right: 8px; font-size: 17px; vertical-align: -3px; }
+  .btn-primary { background: #185FA5; color: #E6F1FB; border-color: #185FA5; }
+  .btn-primary:hover { background: #0C447C; }
+  .btn-danger { background: #A32D2D; color: #FCEBEB; border-color: #A32D2D; }
+  .btn-danger:hover { background: #791F1F; }
+  .btn-success { background: #3B6D11; color: #EAF3DE; border-color: #3B6D11; }
+  .btn-success:hover { background: #27500A; }
+  .btn-amber { background: #854F0B; color: #FAEEDA; border-color: #854F0B; }
+  .btn-amber:hover { background: #633806; }
+  .log-area { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 10px 12px; font-size: 13px; color: var(--color-text-secondary); max-height: 130px; overflow-y: auto; line-height: 1.7; }
+  .log-entry { border-bottom: 0.5px solid var(--color-border-tertiary); padding: 4px 0; }
+  .log-entry:last-child { border: none; }
+  .badge { display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: var(--border-radius-md); font-weight: 500; }
+  .badge-info { background: var(--color-background-info); color: var(--color-text-info); }
+  .badge-success { background: var(--color-background-success); color: var(--color-text-success); }
+  .badge-warn { background: var(--color-background-warning); color: var(--color-text-warning); }
+  .badge-danger { background: var(--color-background-danger); color: var(--color-text-danger); }
+  .top-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--color-background-info); display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 15px; color: var(--color-text-info); flex-shrink: 0; }
+  .top-info h2 { font-size: 16px; font-weight: 500; }
+  .top-info p { font-size: 13px; color: var(--color-text-secondary); }
+  select, input[type=text] { background: var(--color-background-secondary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); color: var(--color-text-primary); padding: 10px 12px; font-size: 15px; width: 100%; margin-bottom: 10px; }
+  .money-bar { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--color-background-secondary); border-radius: var(--border-radius-md); margin-bottom: 12px; }
+  .modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; border-radius: var(--border-radius-lg); }
+  .modal { background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-lg); padding: 1.25rem; width: 90%; max-width: 340px; }
+  .modal h3 { font-size: 16px; margin-bottom: 12px; font-weight: 500; }
+  .market-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 0.5px solid var(--color-border-tertiary); }
+  .market-item:last-child { border: none; }
+  .tab-bar { display: flex; gap: 6px; margin-bottom: 12px; }
+  .tab { flex: 1; padding: 8px; font-size: 13px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: transparent; color: var(--color-text-secondary); cursor: pointer; text-align: center; }
+  .tab.active { background: var(--color-background-info); color: var(--color-text-info); border-color: transparent; font-weight: 500; }
+  .offer-card { border: 0.5px solid var(--color-border-tertiary); border-radius: var(--border-radius-md); padding: 10px 12px; margin-bottom: 8px; }
+  .offer-title { font-size: 14px; font-weight: 500; }
+  .offer-sub { font-size: 12px; color: var(--color-text-secondary); margin: 2px 0 8px; }
+  .skill-up-anim { animation: pulse 0.6s ease; }
+  @keyframes pulse { 0%{transform:scale(1)} 50%{transform:scale(1.2)} 100%{transform:scale(1)} }
+  .relative { position: relative; }
+  .season-badge { font-size: 22px; font-weight: 500; text-align: center; margin: 6px 0 4px; }
+</style>
+
+<div id="root" class="relative" style="min-height: 400px;">
+
+<!-- SETUP -->
+<div id="screen-setup" class="screen active">
+  <div class="card">
+    <div style="text-align:center; margin-bottom: 1rem;">
+      <i class="ti ti-ball-football" style="font-size:36px; color:#185FA5;" aria-hidden="true"></i>
+      <h2 style="font-size:20px; font-weight:500; margin-top:6px;">Kariyer Simülatörü</h2>
+      <p style="font-size:13px; color:var(--color-text-secondary);">Sıfırdan bir futbol efsanesi ol</p>
+    </div>
+    <label class="section-title">Adın</label>
+    <input type="text" id="inp-name" placeholder="Oyuncu adı" value="Ali">
+    <label class="section-title">Ülke</label>
+    <select id="inp-country">
+      <option value="🇹🇷 Türkiye">🇹🇷 Türkiye</option>
+      <option value="🇧🇷 Brezilya">🇧🇷 Brezilya</option>
+      <option value="🇦🇷 Arjantin">🇦🇷 Arjantin</option>
+      <option value="🇩🇪 Almanya">🇩🇪 Almanya</option>
+      <option value="🇫🇷 Fransa">🇫🇷 Fransa</option>
+      <option value="🇪🇸 İspanya">🇪🇸 İspanya</option>
+    </select>
+    <label class="section-title">Mevki</label>
+    <select id="inp-pos">
+      <option value="Forvet" data-bonus="tech">⚽ Forvet</option>
+      <option value="Orta Saha" data-bonus="pass">🎯 Orta Saha</option>
+      <option value="Defans" data-bonus="power">🛡️ Defans</option>
+      <option value="Kaleci" data-bonus="reflex">🧤 Kaleci</option>
+    </select>
+    <button class="btn btn-primary" onclick="startGame()"><i class="ti ti-player-play"></i>Kariyere Başla</button>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen">
+
+  <div id="modal-area"></div>
+
+  <div class="top-bar">
+    <div class="avatar" id="avatar-init">AL</div>
+    <div class="top-info">
+      <h2 id="ui-name">Ali</h2>
+      <p id="ui-team">Serbest Oyuncu · Sezon <span id="ui-season">1</span></p>
+    </div>
+    <div style="margin-left:auto; text-align:right;">
+      <div style="font-size:12px; color:var(--color-text-secondary);">Yaş</div>
+      <div style="font-size:18px; font-weight:500;" id="ui-age">17</div>
+    </div>
+  </div>
+
+  <div class="tab-bar">
+    <div class="tab active" onclick="switchTab('main')" id="tab-main">Ana</div>
+    <div class="tab" onclick="switchTab('match')" id="tab-match">Maç</div>
+    <div class="tab" onclick="switchTab('market')" id="tab-market">Market</div>
+    <div class="tab" onclick="switchTab('career')" id="tab-career">Kariyer</div>
+  </div>
+
+  <!-- MAIN TAB -->
+  <div id="tabcontent-main">
+    <div class="money-bar">
+      <span style="font-size:13px; color:var(--color-text-secondary);"><i class="ti ti-currency-lira" style="vertical-align:-2px;" aria-hidden="true"></i> Banka</span>
+      <span style="font-size:18px; font-weight:500;" id="ui-money">0 ₺</span>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-label"><i class="ti ti-bolt" aria-hidden="true"></i> Güç</div>
+        <div class="stat-val" id="ui-power">10</div>
+        <div class="bar-wrap"><div class="bar-fill" id="bar-power" style="background:#185FA5; width:10%;"></div></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label"><i class="ti ti-run" aria-hidden="true"></i> Hız</div>
+        <div class="stat-val" id="ui-speed">10</div>
+        <div class="bar-wrap"><div class="bar-fill" id="bar-speed" style="background:#3B6D11; width:10%;"></div></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label"><i class="ti ti-star" aria-hidden="true"></i> Teknik</div>
+        <div class="stat-val" id="ui-tech">10</div>
+        <div class="bar-wrap"><div class="bar-fill" id="bar-tech" style="background:#854F0B; width:10%;"></div></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label"><i class="ti ti-heart" aria-hidden="true"></i> Enerji</div>
+        <div class="stat-val" id="ui-energy">100</div>
+        <div class="bar-wrap"><div class="bar-fill" id="bar-energy" style="background:#A32D2D; width:100%;"></div></div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-label"><i class="ti ti-shield" aria-hidden="true"></i> Moral</div>
+        <div class="stat-val" id="ui-moral">80</div>
+        <div class="bar-wrap"><div class="bar-fill" id="bar-moral" style="background:#533AB7; width:80%;"></div></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label"><i class="ti ti-trending-up" aria-hidden="true"></i> Ün</div>
+        <div class="stat-val" id="ui-fame">0</div>
+        <div class="bar-wrap"><div class="bar-fill" id="bar-fame" style="background:#D4537E; width:0%;"></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Aksiyonlar</div>
+      <button class="btn" onclick="doTrain('power')"><i class="ti ti-barbell"></i>Güç Antrenmanı <span style="float:right; font-size:12px; color:var(--color-text-secondary);">-20 Enerji</span></button>
+      <button class="btn" onclick="doTrain('speed')"><i class="ti ti-run"></i>Hız Antrenmanı <span style="float:right; font-size:12px; color:var(--color-text-secondary);">-20 Enerji</span></button>
+      <button class="btn" onclick="doTrain('tech')"><i class="ti ti-ball-football"></i>Teknik Antrenman <span style="float:right; font-size:12px; color:var(--color-text-secondary);">-20 Enerji</span></button>
+      <button class="btn btn-success" onclick="doRest()"><i class="ti ti-zzz"></i>Dinlen <span style="float:right; font-size:12px;">+50 Enerji</span></button>
+      <button class="btn btn-amber" onclick="nextWeek()"><i class="ti ti-calendar-week"></i>Haftayı Geç <span style="float:right; font-size:12px;">+Zaman</span></button>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Kariyer Günlüğü</div>
+      <div class="log-area" id="ui-log">
+        <div class="log-entry">Kariyer başladı. Başarılar!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MATCH TAB -->
+  <div id="tabcontent-match" style="display:none;">
+    <div class="card">
+      <div class="section-title">Sezon Durumu</div>
+      <div class="season-badge" id="ui-season-big">Sezon 1</div>
+      <div style="display:flex; gap:8px; margin-bottom:4px;">
+        <div class="stat-box" style="flex:1; text-align:center;"><div class="stat-label">Gol</div><div class="stat-val" id="ui-goals">0</div></div>
+        <div class="stat-box" style="flex:1; text-align:center;"><div class="stat-label">Asist</div><div class="stat-val" id="ui-assists">0</div></div>
+        <div class="stat-box" style="flex:1; text-align:center;"><div class="stat-label">Maç</div><div class="stat-val" id="ui-matches">0</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">Lig Maçı</div>
+      <p style="font-size:13px; color:var(--color-text-secondary); margin-bottom:10px;">Mevcut takımın için sahaya çık.</p>
+      <button class="btn btn-primary" onclick="playMatch('league')"><i class="ti ti-ball-football"></i>Maça Çık (-40 Enerji)</button>
+    </div>
+    <div class="card">
+      <div class="section-title">Hazırlık Maçı</div>
+      <p style="font-size:13px; color:var(--color-text-secondary); margin-bottom:10px;">Düşük riskli, daha az kazançlı.</p>
+      <button class="btn" onclick="playMatch('friendly')"><i class="ti ti-sport-billard"></i>Hazırlık Maçı (-20 Enerji)</button>
+    </div>
+    <div class="card">
+      <div class="section-title">Transfer Teklifleri</div>
+      <div id="ui-offers">
+        <p style="font-size:13px; color:var(--color-text-secondary);">Henüz teklif yok. Maç oyna, ün kazan.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MARKET TAB -->
+  <div id="tabcontent-market" style="display:none;">
+    <div class="card">
+      <div class="section-title">Dükkan</div>
+      <p style="font-size:13px; color:var(--color-text-secondary); margin-bottom:10px;">Ekipman satın alarak stat bonusu kazan.</p>
+      <div id="shop-items"></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Sahip Olduklarım</div>
+      <div id="owned-items">
+        <p style="font-size:13px; color:var(--color-text-secondary);">Henüz ekipman yok.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAREER TAB -->
+  <div id="tabcontent-career" style="display:none;">
+    <div class="card">
+      <div class="section-title">Kariyer İstatistikleri</div>
+      <div class="stats-grid">
+        <div class="stat-box" style="text-align:center;"><div class="stat-label">Toplam Gol</div><div class="stat-val" id="ui-total-goals">0</div></div>
+        <div class="stat-box" style="text-align:center;"><div class="stat-label">Toplam Maç</div><div class="stat-val" id="ui-total-matches">0</div></div>
+        <div class="stat-box" style="text-align:center;"><div class="stat-label">Ödüller</div><div class="stat-val" id="ui-awards">0</div></div>
+        <div class="stat-box" style="text-align:center;"><div class="stat-label">Sezon</div><div class="stat-val" id="ui-season-stat">1</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">Ödüller</div>
+      <div id="ui-awards-list">
+        <p style="font-size:13px; color:var(--color-text-secondary);">Henüz ödül yok. Oynamaya devam et!</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">Takım Geçmişi</div>
+      <div id="ui-team-history">
+        <p style="font-size:13px; color:var(--color-text-secondary);">Serbest oyuncu</p>
+      </div>
+    </div>
+    <button class="btn btn-danger" onclick="confirmReset()"><i class="ti ti-trash"></i>Kariyeri Sıfırla</button>
+  </div>
+
+</div>
+
+</div>
+
+<script>
+const SHOP = [
+  { id:'boots', name:'Profesyonel Krampon', price:2000, stat:'speed', val:5, icon:'ti-shoe' },
+  { id:'gloves', name:'Eldiven', price:1500, stat:'tech', val:4, icon:'ti-hand-stop' },
+  { id:'vest', name:'Antrenman Yeleği', price:3000, stat:'power', val:6, icon:'ti-shirt' },
+  { id:'protein', name:'Protein Takviyesi', price:800, stat:'power', val:3, icon:'ti-bottle' },
+  { id:'tape', name:'Performans Bandı', price:500, stat:'speed', val:2, icon:'ti-bandage' },
+  { id:'helmet', name:'Kafa Bandı', price:1200, stat:'tech', val:3, icon:'ti-square-rounded-chevron-up' },
+];
+
+const CLUBS = [
+  { name:'Köy Takımı', league:'3. Amatör Lig', salary:500, minFame:0 },
+  { name:'Gençlik SK', league:'2. Amatör Lig', salary:1500, minFame:10 },
+  { name:'İlçe Spor', league:'1. Amatör Lig', salary:4000, minFame:25 },
+  { name:'Bölge FC', league:'Bölgesel Lig', salary:10000, minFame:45 },
+  { name:'Anadolu Spor', league:'2. Lig', salary:25000, minFame:65 },
+  { name:'Büyükşehir FK', league:'1. Lig', salary:80000, minFame:80 },
+  { name:'Süper Kule', league:'Süper Lig', salary:300000, minFame:95 },
+];
+
+let p = {};
+let awards = [];
+let teamHistory = [];
+let owned = [];
+let offerCooldown = 0;
+
+function defaultPlayer(name, country, pos) {
+  return {
+    name, country, pos,
+    power:10, speed:10, tech:10,
+    energy:100, moral:80, fame:0,
+    money:0, age:17,
+    season:1, week:1,
+    goals:0, assists:0, matches:0,
+    totalGoals:0, totalMatches:0, totalAwards:0,
+    team:'Serbest Oyuncu', teamIdx:-1,
+    salary:0,
+  };
+}
+
+function startGame() {
+  const name = document.getElementById('inp-name').value || 'Ali';
+  const country = document.getElementById('inp-country').value;
+  const pos = document.getElementById('inp-pos').value;
+  const saved = localStorage.getItem('fk_player');
+  if(saved) {
+    try {
+      const obj = JSON.parse(saved);
+      p = obj.p; awards = obj.awards; teamHistory = obj.teamHistory; owned = obj.owned||[];
+    } catch(e) { initNew(name,country,pos); }
+  } else {
+    initNew(name, country, pos);
+  }
+  showScreen('game');
+  updateUI();
+  renderShop();
+  addLog(`Hoşgeldin ${p.name}! Haydi kariyerine başla.`);
+}
+
+function initNew(name,country,pos) {
+  p = defaultPlayer(name,country,pos);
+  awards = []; teamHistory = ['Serbest Oyuncu']; owned = [];
+}
+
+function save() {
+  localStorage.setItem('fk_player', JSON.stringify({p, awards, teamHistory, owned}));
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+}
+
+function switchTab(name) {
+  ['main','match','market','career'].forEach(t=>{
+    document.getElementById('tabcontent-'+t).style.display = t===name ? 'block' : 'none';
+    document.getElementById('tab-'+t).classList.toggle('active', t===name);
+  });
+  if(name==='match') renderOffers();
+  if(name==='market') renderShop();
+}
+
+function updateUI() {
+  const av = document.getElementById('avatar-init');
+  av.textContent = p.name.slice(0,2).toUpperCase();
+  document.getElementById('ui-name').textContent = `${p.name} (${p.country})`;
+  document.getElementById('ui-team').textContent = `${p.pos} · ${p.team} · Sezon ${p.season}`;
+  document.getElementById('ui-season').textContent = p.season;
+  document.getElementById('ui-season-big').textContent = `Sezon ${p.season} · Hafta ${p.week}`;
+  document.getElementById('ui-age').textContent = p.age;
+  document.getElementById('ui-money').textContent = p.money.toLocaleString('tr-TR') + ' ₺';
+
+  const stats = ['power','speed','tech','energy','moral','fame'];
+  stats.forEach(s => {
+    const el = document.getElementById('ui-'+s);
+    const bar = document.getElementById('bar-'+s);
+    if(el) el.textContent = Math.round(p[s]);
+    if(bar) bar.style.width = Math.min(100,Math.round(p[s])) + '%';
+  });
+
+  document.getElementById('ui-goals').textContent = p.goals;
+  document.getElementById('ui-assists').textContent = p.assists;
+  document.getElementById('ui-matches').textContent = p.matches;
+  document.getElementById('ui-total-goals').textContent = p.totalGoals;
+  document.getElementById('ui-total-matches').textContent = p.totalMatches;
+  document.getElementById('ui-awards').textContent = p.totalAwards;
+  document.getElementById('ui-season-stat').textContent = p.season;
+
+  renderAwards();
+  renderTeamHistory();
+  save();
+}
+
+function addLog(msg, type) {
+  const log = document.getElementById('ui-log');
+  const div = document.createElement('div');
+  div.className = 'log-entry';
+  div.textContent = `S${p.season}H${p.week}: ${msg}`;
+  log.prepend(div);
+  while(log.children.length > 30) log.removeChild(log.lastChild);
+}
+
+function cap(stat, max) { p[stat] = Math.min(p[stat], max); }
+
+function doTrain(stat) {
+  if(p.energy < 20) { addLog('Enerji yetersiz! Dinlen.'); return; }
+  p.energy -= 20;
+  const gain = Math.floor(Math.random()*4) + 1;
+  p[stat] = Math.min(99, p[stat] + gain);
+  p.moral = Math.min(100, p.moral + 2);
+  addLog(`${stat==='power'?'Güç':stat==='speed'?'Hız':'Teknik'} antrenmanı! +${gain} puan kazandın.`);
+  animateStat('ui-'+stat);
+  updateUI();
+}
+
+function animateStat(id) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.remove('skill-up-anim');
+  void el.offsetWidth;
+  el.classList.add('skill-up-anim');
+}
+
+function doRest() {
+  p.energy = Math.min(100, p.energy + 50);
+  p.moral = Math.min(100, p.moral + 5);
+  addLog('Güzelce dinlendin. Enerji topladın.');
+  updateUI();
+}
+
+function nextWeek() {
+  p.week++;
+  p.energy = Math.min(100, p.energy + 15);
+  if(p.teamIdx >= 0) {
+    p.money += p.salary;
+    addLog(`Maaş ödendi: ${p.salary.toLocaleString('tr-TR')} ₺`);
+  }
+  if(p.week > 38) endSeason();
+  if(offerCooldown > 0) offerCooldown--;
+  updateUI();
+}
+
+function endSeason() {
+  p.week = 1;
+  p.season++;
+  p.age++;
+  p.moral = Math.min(100, p.moral + 10);
+  const oldGoals = p.goals;
+  p.totalGoals += p.goals;
+  p.totalMatches += p.matches;
+  if(p.goals >= 20) {
+    awards.push({ season: p.season-1, title: 'Gol Kralı 👑', desc: `${oldGoals} golle sezonun gol krali!` });
+    p.totalAwards++;
+    addLog(`Tebrikler! ${p.season-1}. sezonda Gol Kralı oldun!`);
+  }
+  if(p.fame >= 90) {
+    awards.push({ season: p.season-1, title: 'Efsane Oyuncu 🌟', desc: 'Sezonun en ünlü oyuncusu!' });
+    p.totalAwards++;
+  }
+  p.goals = 0; p.assists = 0; p.matches = 0;
+  addLog(`Sezon ${p.season-1} tamamlandı! Yeni sezon başlıyor. Yaşın: ${p.age}`);
+  if(p.age >= 38) { addLog('Kariyerin sona erdi! Emekli oldun.'); showRetire(); }
+  updateUI();
+}
+
+function playMatch(type) {
+  const cost = type==='league' ? 40 : 20;
+  if(p.energy < cost) { addLog('Maça çıkacak enerjin yok!'); return; }
+  p.energy -= cost;
+  p.matches++;
+
+  const skill = (p.power + p.speed + p.tech) / 3;
+  const moralFactor = p.moral / 100;
+  const goals = Math.floor(Math.random() * (skill/15) * moralFactor * 2);
+  const assists = Math.random() < 0.4 ? Math.floor(Math.random()*2)+1 : 0;
+
+  p.goals += goals;
+  p.assists += assists;
+
+  const earn = type==='league' ? (800 + skill * 20) : (300 + skill * 8);
+  const fameGain = type==='league' ? (goals*2 + 1) : (goals + 0.5);
+
+  p.money += Math.round(earn);
+  p.fame = Math.min(100, p.fame + fameGain);
+  p.moral = Math.max(0, p.moral + (goals > 0 ? 5 : -3));
+
+  if(type==='league') addLog(`Lig maçı! ${goals} gol, ${assists} asist. +${Math.round(earn).toLocaleString('tr-TR')} ₺ kazandın.`);
+  else addLog(`Hazırlık maçı! ${goals} gol. +${Math.round(earn).toLocaleString('tr-TR')} ₺.`);
+
+  if(goals >= 3) { addLog('Hat-trick yaptın! Harika performans! 🎉'); p.fame = Math.min(100, p.fame+5); }
+  updateUI();
+}
+
+function renderOffers() {
+  const el = document.getElementById('ui-offers');
+  const eligible = CLUBS.filter(c => p.fame >= c.minFame && CLUBS.indexOf(c) !== p.teamIdx);
+  if(eligible.length === 0) {
+    el.innerHTML = '<p style="font-size:13px; color:var(--color-text-secondary);">Henüz teklif yok. Oynamaya devam et!</p>';
+    return;
+  }
+  const offers = eligible.slice(-3);
+  el.innerHTML = offers.map((c,i) => `
+    <div class="offer-card">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div class="offer-title">${c.name}</div>
+          <div class="offer-sub">${c.league}</div>
+          <span class="badge badge-success">${c.salary.toLocaleString('tr-TR')} ₺/hafta</span>
+        </div>
+        <button class="btn btn-primary" style="width:auto; padding:8px 14px;" onclick="joinClub(${CLUBS.indexOf(c)})">Katıl</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function joinClub(idx) {
+  const c = CLUBS[idx];
+  p.team = c.name;
+  p.teamIdx = idx;
+  p.salary = c.salary;
+  p.moral = Math.min(100, p.moral + 15);
+  if(!teamHistory.includes(c.name)) teamHistory.push(c.name);
+  addLog(`${c.name} takımına katıldın! Maaş: ${c.salary.toLocaleString('tr-TR')} ₺/hafta`);
+  renderOffers();
+  updateUI();
+}
+
+function renderShop() {
+  const el = document.getElementById('shop-items');
+  const ownedEl = document.getElementById('owned-items');
+  el.innerHTML = SHOP.map(item => {
+    const has = owned.includes(item.id);
+    return `<div class="market-item">
+      <div>
+        <i class="ti ${item.icon}" style="font-size:18px; color:var(--color-text-secondary); margin-right:8px;" aria-hidden="true"></i>
+        <span style="font-size:14px; font-weight:500;">${item.name}</span>
+        <div style="font-size:12px; color:var(--color-text-secondary); margin-top:2px;">+${item.val} ${item.stat==='power'?'Güç':item.stat==='speed'?'Hız':'Teknik'}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:13px; font-weight:500;">${item.price.toLocaleString('tr-TR')} ₺</div>
+        ${has ? '<span class="badge badge-success">Alındı</span>' :
+          `<button class="btn btn-primary" style="width:auto;padding:6px 12px;margin:4px 0 0;" onclick="buyItem('${item.id}')">Satın Al</button>`}
+      </div>
+    </div>`;
+  }).join('');
+
+  const myItems = SHOP.filter(i => owned.includes(i.id));
+  if(myItems.length === 0) {
+    ownedEl.innerHTML = '<p style="font-size:13px; color:var(--color-text-secondary);">Henüz ekipman yok.</p>';
+  } else {
+    ownedEl.innerHTML = myItems.map(i => `
+      <div class="market-item">
+        <span style="font-size:14px;">${i.name}</span>
+        <span class="badge badge-info">+${i.val} ${i.stat==='power'?'Güç':i.stat==='speed'?'Hız':'Teknik'}</span>
+      </div>`).join('');
+  }
+}
+
+function buyItem(id) {
+  const item = SHOP.find(i=>i.id===id);
+  if(!item) return;
+  if(owned.includes(id)) { addLog('Bu ekipman zaten sende var!'); return; }
+  if(p.money < item.price) { addLog('Yeterli paran yok!'); return; }
+  p.money -= item.price;
+  owned.push(id);
+  p[item.stat] = Math.min(99, p[item.stat] + item.val);
+  addLog(`${item.name} satın aldın! +${item.val} ${item.stat==='power'?'Güç':item.stat==='speed'?'Hız':'Teknik'}`);
+  renderShop();
+  updateUI();
+}
+
+function renderAwards() {
+  const el = document.getElementById('ui-awards-list');
+  if(awards.length === 0) {
+    el.innerHTML = '<p style="font-size:13px; color:var(--color-text-secondary);">Henüz ödül yok. Oynamaya devam et!</p>';
+    return;
+  }
+  el.innerHTML = awards.map(a => `
+    <div class="market-item">
+      <div>
+        <div style="font-size:14px; font-weight:500;">${a.title}</div>
+        <div style="font-size:12px; color:var(--color-text-secondary);">${a.desc}</div>
+      </div>
+      <span class="badge badge-warn">Sezon ${a.season}</span>
+    </div>`).join('');
+}
+
+function renderTeamHistory() {
+  const el = document.getElementById('ui-team-history');
+  el.innerHTML = teamHistory.map(t => `<div class="market-item"><span style="font-size:14px;">${t}</span></div>`).join('');
+}
+
+function showRetire() {
+  const modal = document.getElementById('modal-area');
+  modal.innerHTML = `
+    <div class="modal-overlay">
+      <div class="modal">
+        <h3>🏆 Kariyer Bitti!</h3>
+        <p style="font-size:14px; color:var(--color-text-secondary); margin-bottom:12px;">
+          ${p.name}, ${p.age} yaşında emekli oldu.<br>
+          Toplam: ${p.totalGoals} gol, ${p.totalMatches} maç, ${p.totalAwards} ödül.
+        </p>
+        <button class="btn btn-primary" onclick="confirmReset()">Yeni Kariyer Başlat</button>
+      </div>
+    </div>`;
+}
+
+function confirmReset() {
+  const modal = document.getElementById('modal-area');
+  modal.innerHTML = `
+    <div class="modal-overlay">
+      <div class="modal">
+        <h3>Emin misin?</h3>
+        <p style="font-size:14px; color:var(--color-text-secondary); margin-bottom:12px;">Tüm kariyer verilerin silinecek.</p>
+        <button class="btn btn-danger" onclick="doReset()"><i class="ti ti-trash"></i>Evet, Sıfırla</button>
+        <button class="btn" onclick="closeModal()">İptal</button>
+      </div>
+    </div>`;
+}
+
+function closeModal() {
+  document.getElementById('modal-area').innerHTML = '';
+}
+
+function doReset() {
+  localStorage.removeItem('fk_player');
+  p={}; awards=[]; teamHistory=[]; owned=[];
+  showScreen('setup');
+  closeModal();
+}
+
+window.onload = () => {
+  const saved = localStorage.getItem('fk_player');
+  if(saved) {
+    try {
+      const obj = JSON.parse(saved);
+      p = obj.p; awards = obj.awards||[]; teamHistory = obj.teamHistory||[]; owned = obj.owned||[];
+      showScreen('game');
+      updateUI();
+      renderShop();
+      addLog('Kaydedilmiş kariyer yüklendi.');
+    } catch(e) { }
+  }
+};
+</script>
